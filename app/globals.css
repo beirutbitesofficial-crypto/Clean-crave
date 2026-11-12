@@ -1,5 +1,8 @@
 @import "tailwindcss";
 
+/* Small phones held upright with little height to spare (browser bars showing). */
+@custom-variant short (@media (max-width: 1023px) and (max-height: 700px));
+
 @theme {
   /* CleanCrave brand — sampled from the logo and the printed menu (black lacquer, metallic gold, white) */
   --color-ink: #070605;
@@ -138,6 +141,15 @@ label[for] {
     gap: 0.6rem;
     padding-inline: 1.2rem;
     letter-spacing: 0.17em;
+  }
+}
+
+@media (max-width: 379px) {
+  .btn {
+    gap: 0.5rem;
+    padding-inline: 0.95rem;
+    font-size: 11.5px;
+    letter-spacing: 0.11em;
   }
 }
 

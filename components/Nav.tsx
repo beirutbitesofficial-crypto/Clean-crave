@@ -32,7 +32,7 @@ export default function Nav() {
     <header className={`fixed inset-x-0 top-0 z-40 transition-all duration-500 ${gone ? "pointer-events-none -translate-y-full opacity-0" : "opacity-100"}`} inert={gone}>
       <div className="mx-auto flex max-w-[1500px] items-center justify-between px-5 py-4 lg:px-12 lg:py-5">
         <a href="#top" aria-label={`${site.name} — home`} className="flex min-h-11 items-center gap-2.5">
-          <img src="/brand/emblem.webp" width={740} height={538} alt="" className="h-9 w-auto" />
+          <img src="/brand/emblem.webp" width={370} height={269} alt="" className="h-9 w-auto" />
           <Wordmark className="text-[19px]" />
         </a>
         <nav aria-label="Main" className="flex items-center gap-1 text-xs font-bold uppercase tracking-[0.24em]">

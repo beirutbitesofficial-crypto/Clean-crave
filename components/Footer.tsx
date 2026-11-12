@@ -24,7 +24,7 @@ export default function Footer() {
         gsap.fromTo(
           q(".sig-fill"),
           { clipPath: "inset(0 100% 0 0)" },
-          { clipPath: "inset(0 0% 0 0)", ease: "none", scrollTrigger: { trigger: q(".sig")[0], start: "top 96%", end: "bottom 78%", scrub: 0.8 } }
+          { clipPath: "inset(0 0% 0 0)", ease: "none", scrollTrigger: { trigger: q(".sig")[0], start: "top 96%", end: "max", scrub: 0.8 } }
         );
         gsap.from(q(".foot-fade"), { autoAlpha: 0, y: 22, duration: 1.1, stagger: 0.08, ease: "expo.out", scrollTrigger: { trigger: root.current, start: "top 85%" } });
       });
@@ -71,11 +71,11 @@ export default function Footer() {
       </div>
 
       <div className="sig relative mx-auto mt-12 max-w-[1400px] select-none md:mt-16" aria-hidden="true">
-        <p className="outline-gold whitespace-nowrap text-center font-display text-[20.5vw] uppercase leading-[0.9] tracking-[0.01em] min-[1500px]:text-[306px]">CleanCrave</p>
-        <p className="sig-fill gold-text absolute inset-0 whitespace-nowrap text-center font-display text-[20.5vw] uppercase leading-[0.9] tracking-[0.01em] min-[1500px]:text-[306px]">CleanCrave</p>
+        <p className="outline-gold whitespace-nowrap text-center font-display text-[19vw] uppercase leading-[0.9] tracking-[0.01em] min-[1500px]:text-[285px]">CleanCrave</p>
+        <p className="sig-fill gold-text absolute inset-0 whitespace-nowrap text-center font-display text-[19vw] uppercase leading-[0.9] tracking-[0.01em] min-[1500px]:text-[285px]">CleanCrave</p>
       </div>
 
-      <div className="mx-auto mt-8 flex max-w-[1400px] flex-wrap items-center justify-between gap-3 border-t border-ivory/10 pt-6 font-cond text-[13px] font-semibold uppercase tracking-[0.3em] text-ivory/55">
+      <div className="mx-auto mt-8 flex max-w-[1400px] flex-wrap items-center justify-between gap-3 border-t border-ivory/10 pt-6 font-cond text-[13px] md:pr-24 font-semibold uppercase tracking-[0.3em] text-ivory/55">
         <span>
           © {new Date().getFullYear()} {site.name}
         </span>

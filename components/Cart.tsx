@@ -91,11 +91,11 @@ export function CartDrawer() {
         role="dialog"
         aria-modal="true"
         aria-labelledby="order-title"
-        className={`absolute inset-y-0 right-0 flex w-full max-w-[470px] flex-col bg-ink-2 shadow-[-40px_0_80px_-30px_rgba(0,0,0,0.9)] transition-transform duration-500 ease-[cubic-bezier(.16,1,.3,1)] ${open ? "translate-x-0" : "translate-x-full"}`}
+        className={`absolute inset-y-0 right-0 flex w-full max-w-[470px] flex-col bg-ink-2 transition-transform duration-500 ease-[cubic-bezier(.16,1,.3,1)] ${open ? "translate-x-0 shadow-[-40px_0_80px_-30px_rgba(0,0,0,0.9)]" : "translate-x-full"}`}
       >
         <header className="flex items-center justify-between border-b border-ivory/10 px-5 py-4 sm:px-6">
           <div className="flex items-center gap-3">
-            <img src="/brand/emblem.webp" width={740} height={538} alt="" className="h-9 w-auto" />
+            <img src="/brand/emblem.webp" width={370} height={269} alt="" className="h-9 w-auto" />
             <h2 id="order-title" className="font-serif text-2xl">
               My <em className="gold-text pr-[0.08em]">order</em>
             </h2>

@@ -20,8 +20,10 @@ export function SplitWords({ text, className = "", wordClass = "" }: { text: str
   return (
     <>
       {words.map((w, i) => (
-        <span key={i} className={`inline-block overflow-hidden pb-[0.14em] -mb-[0.14em] align-top ${className}`}>
-          <span className={`word inline-block will-change-transform ${wordClass}`}>{w}</span>
+        <span key={i}>
+          <span className={`inline-block overflow-hidden pb-[0.14em] -mb-[0.14em] align-top ${className}`}>
+            <span className={`word inline-block will-change-transform ${wordClass}`}>{w}</span>
+          </span>
           {i < words.length - 1 ? " " : null}
         </span>
       ))}

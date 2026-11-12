@@ -75,7 +75,7 @@ export default function Steps() {
 
       <dl className="facts mx-auto grid max-w-[1400px] grid-cols-2 gap-x-6 gap-y-10 lg:grid-cols-4">
         {FACTS.map((f) => (
-          <div key={f.label} className="fact flex flex-col-reverse border-l border-gold/40 pl-4 md:pl-6">
+          <div key={f.label} className="fact flex flex-col-reverse justify-end border-l border-gold/40 pl-4 md:pl-6">
             <dt className="mt-2 max-w-[15rem] font-cond text-sm font-semibold uppercase leading-snug tracking-[0.18em] text-ivory/60">{f.label}</dt>
             <dd className="font-display text-[17vw] leading-[0.9] text-ivory sm:text-[92px] lg:text-[clamp(72px,7vw,116px)]">
               <span className="gold-text">
