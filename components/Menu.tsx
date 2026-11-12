@@ -199,7 +199,8 @@ export default function Menu() {
 
         // Cards rise in rows; each ring draws its three arcs as the card lands.
         const cards = q(".meal");
-        gsap.set(cards, { autoAlpha: 0, y: 46 });
+        // Opacity only (never visibility) so the + buttons stay reachable with the Tab key before their card has risen.
+        gsap.set(cards, { opacity: 0, y: 46 });
         const lenOf = (arc: Element) => Number((arc as HTMLElement).dataset.len);
         gsap.set(q(".meal .ring-arc"), { strokeDashoffset: (_i: number, arc: Element) => lenOf(arc) });
         ScrollTrigger.batch(cards, {
@@ -208,7 +209,7 @@ export default function Menu() {
           onEnter: (batch) =>
             batch.forEach((card, i) => {
               const delay = i * 0.09;
-              gsap.to(card, { autoAlpha: 1, y: 0, duration: 1.1, delay, ease: "expo.out", clearProps: "transform" });
+              gsap.to(card, { opacity: 1, y: 0, duration: 1.1, delay, ease: "expo.out", clearProps: "transform" });
               gsap.to(card.querySelectorAll(".ring-arc"), { strokeDashoffset: 0, duration: 1.1, delay: delay + 0.2, stagger: 0.16, ease: "power2.inOut" });
             }),
         });

@@ -26,7 +26,7 @@ export default function Footer() {
           { clipPath: "inset(0 100% 0 0)" },
           { clipPath: "inset(0 0% 0 0)", ease: "none", scrollTrigger: { trigger: q(".sig")[0], start: "top 96%", end: "max", scrub: 0.8 } }
         );
-        gsap.from(q(".foot-fade"), { autoAlpha: 0, y: 22, duration: 1.1, stagger: 0.08, ease: "expo.out", scrollTrigger: { trigger: root.current, start: "top 85%" } });
+        gsap.from(q(".foot-fade"), { opacity: 0, y: 22, duration: 1.1, stagger: 0.08, ease: "expo.out", scrollTrigger: { trigger: root.current, start: "top 85%" } });
       });
       return () => mm.revert();
     },

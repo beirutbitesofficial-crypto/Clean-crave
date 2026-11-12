@@ -25,7 +25,7 @@ export default function Order() {
           .timeline({ defaults: { ease: "expo.out" }, scrollTrigger: { trigger: root.current, start: "top 68%" } })
           .from(q(".order-eyebrow"), { autoAlpha: 0, y: 16, duration: 1 }, 0)
           .from(q(".order-title .word"), { yPercent: 115, duration: 1.4, stagger: 0.09 }, 0.05)
-          .from(q(".order-fade"), { autoAlpha: 0, y: 28, duration: 1.1, stagger: 0.1 }, 0.45);
+          .from(q(".order-fade"), { opacity: 0, y: 28, duration: 1.1, stagger: 0.1 }, 0.45);
 
         // Rings drift at different speeds behind the words.
         (q(".order-ring") as HTMLElement[]).forEach((ring, i) => {
