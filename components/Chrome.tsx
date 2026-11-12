@@ -32,5 +32,5 @@ export default function Chrome() {
     };
   }, []);
 
-  return <div ref={bar} className="gold-fill pointer-events-none fixed inset-x-0 top-0 z-[60] h-[2px] origin-left scale-x-0" aria-hidden="true" />;
+  return <div ref={bar} className="gold-fill pointer-events-none fixed inset-x-0 top-0 z-[60] h-[2px] origin-left scale-x-0 rtl:origin-right" aria-hidden="true" />;
 }

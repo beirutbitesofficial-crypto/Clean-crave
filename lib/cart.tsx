@@ -1,8 +1,9 @@
 "use client";
 
 import { createContext, useCallback, useContext, useEffect, useMemo, useState } from "react";
+import { useLang } from "./i18n";
 import { findItem, type Item, money } from "./menu";
-import { site, whatsappLink } from "./site";
+import { whatsappLink } from "./site";
 
 export type Line = { id: string; qty: number };
 export type FullLine = Line & { item: Item };
@@ -38,6 +39,7 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
   const [name, setName] = useState("");
   const [notes, setNotes] = useState("");
   const [restored, setRestored] = useState(false);
+  const { t } = useLang();
 
   // Restore (per-device convenience only; ignore if storage is blocked).
   useEffect(() => {
@@ -84,14 +86,15 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
       }),
       { price: 0, kcal: 0, p: 0, c: 0, f: 0 }
     );
-    const extra = [name.trim() && `Name: ${name.trim()}`, notes.trim() && `Notes: ${notes.trim()}`].filter(Boolean) as string[];
+    // Greeting and labels follow the visitor's language; meal names stay as on the kitchen's menu.
+    const extra = [name.trim() && `${t.wa.name}: ${name.trim()}`, notes.trim() && `${t.wa.notes}: ${notes.trim()}`].filter(Boolean) as string[];
     const message = [
-      `Hello ${site.name}! I'd like to order:`,
+      t.wa.intro,
       "",
       ...lines.map(({ item, qty }) => `• ${qty} × ${item.name} — ${money(item.price * qty)}`),
       "",
-      `Total: ${money(totals.price)}`,
-      `Macros: ${totals.kcal} kcal · P ${totals.p} g · C ${totals.c} g · F ${totals.f} g`,
+      `${t.wa.total}: ${money(totals.price)}`,
+      `${t.wa.macros}: ${totals.kcal} kcal · P ${totals.p} g · C ${totals.c} g · F ${totals.f} g`,
       ...(extra.length ? ["", ...extra] : []),
     ].join("\n");
 
@@ -112,7 +115,7 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
       pulse,
       orderLink: whatsappLink(message),
     };
-  }, [raw, open, add, setQty, name, notes, pulse]);
+  }, [raw, open, add, setQty, name, notes, pulse, t]);
 
   return <CartContext.Provider value={value}>{children}</CartContext.Provider>;
 }

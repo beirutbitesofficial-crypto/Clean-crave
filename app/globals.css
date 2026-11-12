@@ -21,10 +21,12 @@
 
   --color-wa: #25d366;
 
-  --font-display: var(--font-anton), "Impact", "Haettenschweiler", "Arial Narrow Bold", sans-serif;
-  --font-serif: var(--font-playfair), "Didot", "Georgia", serif;
-  --font-cond: var(--font-barlow), "Arial Narrow", "Roboto Condensed", sans-serif;
-  --font-sans: var(--font-manrope), ui-sans-serif, system-ui, sans-serif;
+  /* Each stack starts with its Arabic face. Those only cover Arabic letters, so Latin text falls
+     straight through to the brand font that follows. */
+  --font-display: var(--font-ar-display), var(--font-anton), "Impact", "Haettenschweiler", "Arial Narrow Bold", sans-serif;
+  --font-serif: var(--font-ar-serif), var(--font-playfair), "Didot", "Georgia", serif;
+  --font-cond: var(--font-ar-text), var(--font-barlow), "Arial Narrow", "Roboto Condensed", sans-serif;
+  --font-sans: var(--font-ar-text), var(--font-manrope), ui-sans-serif, system-ui, sans-serif;
 
   --ease-lux: cubic-bezier(0.16, 1, 0.3, 1);
 }
@@ -78,6 +80,25 @@ label[for] {
   &::-webkit-scrollbar {
     display: none;
   }
+}
+
+/* ── Arabic ───────────────────────────────────────────────────────────── */
+
+/* Arabic letters join, so the wide tracking used on Latin labels is dropped, and nothing is slanted —
+   the script has no italic. Brand lettering marked lang="en" keeps its Latin styling. */
+html[lang="ar"] :not(:lang(en)) {
+  letter-spacing: 0 !important;
+}
+
+html[lang="ar"] :is(em, .italic):not(:lang(en)) {
+  font-style: normal;
+}
+
+/* Gold lettering is painted only inside its own box, and Arabic rises and dips further than Latin.
+   Give that box room above and below (the negative margin keeps the layout where it was). */
+html[lang="ar"] .gold-text:not(:lang(en)) {
+  padding-block: 0.45em;
+  margin-block: -0.45em;
 }
 
 /* ── Gold ─────────────────────────────────────────────────────────────── */

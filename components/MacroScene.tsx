@@ -3,6 +3,7 @@
 import { useRef } from "react";
 import { useCart } from "@/lib/cart";
 import { type Conditions, gsap, MQ, useGSAP } from "@/lib/gsap";
+import { useLang } from "@/lib/i18n";
 import { money, stats } from "@/lib/menu";
 import MacroRing from "./MacroRing";
 import { Plus } from "./Icons";
@@ -10,9 +11,9 @@ import { Plus } from "./Icons";
 const dish = stats.topProtein;
 
 const ROWS = [
-  { k: "p", letter: "P", word: "Protein", grams: dish.p, from: "Chicken, turkey, tuna, eggs, Greek yogurt.", tone: "text-protein", bar: "bg-protein" },
-  { k: "c", letter: "C", word: "Carbs", grams: dish.c, from: "Rice, oats, potatoes, pasta, fruit.", tone: "text-carb", bar: "bg-carb" },
-  { k: "f", letter: "F", word: "Fat", grams: dish.f, from: "Avocado, pesto, cheese, seeds.", tone: "text-fat", bar: "bg-fat" },
+  { k: "p", letter: "P", word: "protein", grams: dish.p, tone: "text-protein", bar: "bg-protein" },
+  { k: "c", letter: "C", word: "carbs", grams: dish.c, tone: "text-carb", bar: "bg-carb" },
+  { k: "f", letter: "F", word: "fat", grams: dish.f, tone: "text-fat", bar: "bg-fat" },
 ] as const;
 
 /**
@@ -27,6 +28,7 @@ export default function MacroScene() {
   const root = useRef<HTMLElement>(null);
   const { add, qtyOf, setOpen } = useCart();
   const inOrder = qtyOf(dish.id) > 0;
+  const { t, lang, rtl, name } = useLang();
 
   useGSAP(
     () => {
@@ -74,7 +76,7 @@ export default function MacroScene() {
           const len = Number(arc.dataset.len);
           tl.fromTo(arc, { strokeDashoffset: len }, { strokeDashoffset: 0, duration: 0.85, ease: "power1.inOut" }, i + 0.1)
             .to(q(`.scene-row-${r.k}`), { autoAlpha: 1, duration: 0.3 }, i + 0.1)
-            .fromTo(q(`.scene-row-${r.k} .scene-row-in`), { x: 26 }, { x: 0, duration: 0.5, ease: "power2.out" }, i + 0.1)
+            .fromTo(q(`.scene-row-${r.k} .scene-row-in`), { x: rtl ? -26 : 26 }, { x: 0, duration: 0.5, ease: "power2.out" }, i + 0.1)
             .to(q(`.scene-row-${r.k} .scene-bar`), { scaleX: 1, duration: 0.8, ease: "power1.inOut" }, i + 0.1)
             .to(q(`.scene-letter-${r.k}`), { autoAlpha: 1, scale: 1.3, duration: 0.25, ease: "power2.out" }, i + 0.1)
             .to(q(`.scene-letter-${r.k}`), { scale: 1, duration: 0.4, ease: "power2.inOut" }, i + 0.4);
@@ -91,7 +93,8 @@ export default function MacroScene() {
 
       return () => mm.revert();
     },
-    { scope: root }
+    // Rebuilt when the language changes: the text is a different size, so the pin is measured again.
+    { scope: root, dependencies: [lang], revertOnUpdate: true }
   );
 
   return (
@@ -107,7 +110,7 @@ export default function MacroScene() {
             <MacroRing p={dish.p} c={dish.c} f={dish.f} stroke={4.5} className="scene-ring relative h-full w-full" />
             <div className="absolute inset-0 grid place-items-center text-center">
               <div>
-                <p className="flex items-center justify-center gap-2.5 font-display text-[15px] leading-none lg:gap-3 lg:text-[1.7vw]" aria-hidden="true">
+                <p dir="ltr" className="flex items-center justify-center gap-2.5 font-display text-[15px] leading-none lg:gap-3 lg:text-[1.7vw]" aria-hidden="true">
                   {ROWS.map((r) => (
                     <span key={r.k} className={`scene-letter scene-letter-${r.k} inline-block ${r.tone}`}>
                       {r.letter}
@@ -119,17 +122,17 @@ export default function MacroScene() {
                     {dish.kcal}
                   </span>
                 </p>
-                <p className="mt-0.5 pl-[0.4em] font-cond text-xs font-semibold uppercase tracking-[0.4em] text-gold lg:text-base">kcal</p>
+                <p className="mt-0.5 pl-[0.4em] font-cond text-xs font-semibold uppercase tracking-[0.4em] text-gold lg:text-base rtl:pl-0 rtl:text-sm rtl:lg:text-lg">{t.kcal}</p>
               </div>
             </div>
           </div>
 
           {/* The reading */}
           <div>
-            <div className="scene-head text-center lg:text-left">
-              <p className="font-cond text-xs font-semibold uppercase tracking-[0.42em] text-gold lg:text-[13px]">How to read the menu</p>
-              <h2 id="macros-title" className="mt-2 font-serif text-[8.4vw] leading-[1.04] sm:text-5xl lg:mt-4 lg:text-[clamp(44px,4.3vw,72px)]">
-                Three numbers on <em className="gold-text pr-[0.08em]">every meal.</em>
+            <div className="scene-head text-center lg:text-start">
+              <p className="font-cond text-xs font-semibold uppercase tracking-[0.42em] text-gold lg:text-[13px] rtl:text-sm rtl:lg:text-base">{t.scene.eyebrow}</p>
+              <h2 id="macros-title" className="mt-2 font-serif text-[8.4vw] leading-[1.04] sm:text-5xl lg:mt-4 lg:text-[clamp(44px,4.3vw,72px)] rtl:mt-1 rtl:leading-[1.3] rtl:lg:mt-2">
+                {t.scene.title} <em className="gold-text pe-[0.08em]">{t.scene.titleEm}</em>
               </h2>
             </div>
 
@@ -141,36 +144,36 @@ export default function MacroScene() {
                       {r.letter}
                     </span>
                     <div className="min-w-0 flex-1">
-                      <p className="font-sans text-[17px] font-bold leading-tight lg:text-2xl">{r.word}</p>
-                      <p className="mt-0.5 hidden text-[15px] leading-snug text-ivory/60 lg:block">{r.from}</p>
+                      <p className="font-sans text-[17px] font-bold leading-tight lg:text-2xl rtl:leading-snug">{t[r.word]}</p>
+                      <p className="mt-0.5 hidden text-[15px] leading-snug text-ivory/60 lg:block rtl:text-base">{t.scene.from[r.k]}</p>
                       <span className="mt-1.5 block h-px w-full bg-ivory/10 lg:mt-2">
-                        <span className={`scene-bar block h-px w-full origin-left ${r.bar}`} />
+                        <span className={`scene-bar block h-px w-full origin-left rtl:origin-right ${r.bar}`} />
                       </span>
                     </div>
                     <p className={`shrink-0 font-cond text-[38px] font-bold leading-none tabular-nums lg:text-[68px] ${r.tone}`}>
                       <span data-count={r.grams}>{r.grams}</span>
-                      <span className="ml-1 text-sm font-semibold text-ivory/55 lg:text-xl">g</span>
+                      <span className="ms-1 text-sm font-semibold text-ivory/55 lg:text-xl">{t.g}</span>
                     </p>
                   </div>
                 </li>
               ))}
             </ul>
 
-            <p className="scene-end mt-3 hidden text-center text-[13px] italic leading-snug text-ivory/60 lg:mt-4 lg:block lg:text-left [@media(min-height:740px)]:block">
-              *Macros are measured in grams: P (protein), C (carbs) and F (fat).
+            <p className="scene-end mt-3 hidden text-center text-[13px] italic leading-snug text-ivory/60 lg:mt-4 lg:block lg:text-start [@media(min-height:740px)]:block rtl:text-sm">
+              {t.scene.note}
             </p>
 
             <div className="scene-end mt-3 flex flex-col items-center gap-2.5 lg:mt-7 lg:flex-row lg:gap-5">
-              <p className="text-center text-sm text-ivory/75 lg:text-left">
-                On the plate: <strong className="font-bold text-ivory">{dish.name}</strong> · <span className="text-gold">{money(dish.price)}</span>
+              <p className="text-center text-sm text-ivory/75 lg:text-start rtl:text-base">
+                {t.scene.onPlate} <strong className="font-bold text-ivory">{name(dish)}</strong> · <span dir="ltr" className="text-gold">{money(dish.price)}</span>
               </p>
               <button type="button" onClick={() => (inOrder ? setOpen(true) : add(dish.id))} className="btn btn-gold !min-h-11 !px-5">
                 {inOrder ? (
-                  "In your order"
+                  t.scene.inOrder
                 ) : (
                   <>
                     <Plus className="h-3.5 w-3.5" />
-                    Add to order
+                    {t.scene.add}
                   </>
                 )}
               </button>

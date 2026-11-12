@@ -2,17 +2,18 @@
 
 import { useRef } from "react";
 import { type Conditions, gsap, MQ, ScrollTrigger, useGSAP } from "@/lib/gsap";
+import { useLang } from "@/lib/i18n";
 import { money, stats } from "@/lib/menu";
-import { helloLink, site } from "@/lib/site";
+import { site, whatsappLink } from "@/lib/site";
 import GoldDust from "./GoldDust";
 import { Arrow, WhatsAppIcon } from "./Icons";
 import { SplitChars } from "./SplitText";
 
 /** The three macros sitting on the orbit around the logo. Angle in degrees, 0 = three o'clock. */
 const NODES = [
-  { k: "P", word: "Protein", angle: -132, tone: "text-protein", label: "right-full mr-2.5" },
-  { k: "C", word: "Carbs", angle: -48, tone: "text-carb", label: "left-full ml-2.5" },
-  { k: "F", word: "Fat", angle: 90, tone: "text-fat", label: "left-full ml-2.5" },
+  { k: "P", word: "protein", angle: -132, tone: "text-protein", label: "right-full mr-2.5" },
+  { k: "C", word: "carbs", angle: -48, tone: "text-carb", label: "left-full ml-2.5" },
+  { k: "F", word: "fat", angle: 90, tone: "text-fat", label: "left-full ml-2.5" },
 ] as const;
 
 const at = (deg: number) => {
@@ -22,9 +23,12 @@ const at = (deg: number) => {
 
 export default function Hero() {
   const root = useRef<HTMLElement>(null);
+  const { t, lang, ready } = useLang();
 
+  // Runs once, as soon as the visitor's language is known — switching language later never replays the curtain.
   useGSAP(
     () => {
+      if (!ready) return;
       const mm = gsap.matchMedia();
       const q = gsap.utils.selector(root);
 
@@ -105,11 +109,11 @@ export default function Hero() {
 
       return () => mm.revert();
     },
-    { scope: root }
+    { scope: root, dependencies: [ready] }
   );
 
   return (
-    <section ref={root} id="top" className="relative flex min-h-screen-s w-full flex-col overflow-hidden bg-ink" aria-label={`${site.name} — ${site.tagline}`}>
+    <section ref={root} id="top" className="relative flex min-h-screen-s w-full flex-col overflow-hidden bg-ink" aria-label={`${site.name} — ${t.tagline}`}>
       {/* Curtain shown while the page settles (JS only; skipped with reduce-motion) */}
       <div className="preloader pre fixed inset-0 z-[100] place-items-center bg-ink" aria-hidden="true">
         <div className="pre-inner relative grid place-items-center">
@@ -119,7 +123,7 @@ export default function Hero() {
           </svg>
           <img src="/brand/emblem.webp" width={370} height={269} alt="" className="pre-mark invisible absolute w-28" />
         </div>
-        <p className="pre-word invisible absolute bottom-[16%] left-0 w-full pl-[0.5em] text-center font-cond text-xs font-semibold uppercase tracking-[0.5em] text-ivory/60">{site.tagline}</p>
+        <p className="pre-word invisible absolute bottom-[16%] left-0 w-full pl-[0.5em] text-center font-cond text-xs font-semibold uppercase tracking-[0.5em] text-ivory/60 rtl:pl-0 rtl:text-base">{t.tagline}</p>
       </div>
 
       {/* Backdrop */}
@@ -149,7 +153,7 @@ export default function Hero() {
                 <div key={n.k} className="hero-node hero-reveal invisible-pre absolute -ml-[22px] -mt-[22px] h-11 w-11" style={at(n.angle)}>
                   <div className="hero-node-in relative grid h-full w-full place-items-center rounded-full bg-ink shadow-[0_0_0_1px_rgba(221,182,94,0.55),0_0_26px_-4px_rgba(221,182,94,0.6)]">
                     <span className={`font-display text-[19px] leading-none ${n.tone}`}>{n.k}</span>
-                    <span className={`absolute top-1/2 hidden -translate-y-1/2 font-cond text-xs font-semibold uppercase tracking-[0.3em] text-ivory/60 lg:block ${n.label}`}>{n.word}</span>
+                    <span className={`absolute top-1/2 hidden -translate-y-1/2 font-cond text-xs font-semibold uppercase tracking-[0.3em] text-ivory/60 lg:block rtl:text-sm ${n.label}`}>{t[n.word]}</span>
                   </div>
                 </div>
               ))}
@@ -169,55 +173,56 @@ export default function Hero() {
         </div>
 
         {/* Copy */}
-        <div className="hero-copy flex flex-col items-center text-center lg:order-1 lg:items-start lg:text-left">
-          <p className="hero-fade hero-reveal invisible-pre flex items-center gap-3 font-cond text-[13px] font-semibold uppercase tracking-[0.42em] text-gold">
+        <div className="hero-copy flex flex-col items-center text-center lg:order-1 lg:items-start lg:text-start">
+          <p className="hero-fade hero-reveal invisible-pre flex items-center gap-3 font-cond text-[13px] font-semibold uppercase tracking-[0.42em] text-gold rtl:text-base">
             <span className="h-px w-8 bg-gold/70" />
-            Macro-counted meals
+            {t.hero.eyebrow}
             <span className="h-px w-8 bg-gold/70 lg:hidden" />
           </p>
 
           <h1 className="sr-only">
-            {site.name} — {site.tagline}
+            {site.name} — {t.tagline}
           </h1>
-          <div className="mt-5 font-display uppercase leading-none" aria-hidden="true">
-            <p className="hero-l1 hero-reveal invisible-pre pl-[0.42em] text-[6.2vw] tracking-[0.42em] text-ivory/90 sm:text-[30px] lg:pl-0 lg:text-[clamp(22px,2.05vw,34px)]">
-              <SplitChars text="Meals that" />
+          {/* The split pieces are keyed by language: a switch swaps in fresh, already-visible lettering. */}
+          <div className="mt-5 font-display uppercase leading-none rtl:mt-3" aria-hidden="true">
+            <p className="hero-l1 hero-reveal invisible-pre pl-[0.42em] text-[6.2vw] tracking-[0.42em] text-ivory/90 sm:text-[30px] lg:pl-0 lg:text-[clamp(22px,2.05vw,34px)] rtl:pl-0 rtl:text-[9vw] rtl:leading-[1.3] rtl:sm:text-[44px] rtl:lg:text-[clamp(34px,3.2vw,54px)]">
+              <SplitChars key={lang} text={t.hero.l1} />
             </p>
-            <p className="hero-l2 hero-reveal invisible-pre mt-3 whitespace-nowrap text-[13.2vw] leading-[0.98] tracking-[0.012em] sm:text-[76px] lg:mt-4 lg:text-[clamp(64px,6.35vw,112px)]">
-              <SplitChars text="Fuel your" />{" "}
-              <span className="inline-block overflow-hidden pb-[0.08em] -mb-[0.08em] pt-[0.06em] -mt-[0.06em] align-top">
-                <span className="hero-gold gold-text inline-block will-change-transform">Goals</span>
+            <p className="hero-l2 hero-reveal invisible-pre mt-3 whitespace-nowrap text-[13.2vw] leading-[0.98] tracking-[0.012em] sm:text-[76px] lg:mt-4 lg:text-[clamp(64px,6.35vw,112px)] rtl:mt-0 rtl:text-[12.4vw] rtl:leading-[1.35] rtl:sm:text-[70px] rtl:lg:mt-0 rtl:lg:text-[clamp(58px,5.6vw,98px)]">
+              <SplitChars key={lang} text={t.hero.l2} />{" "}
+              <span key={`gold-${lang}`} className="inline-block overflow-hidden pb-[0.08em] -mb-[0.08em] pt-[0.06em] -mt-[0.06em] align-top rtl:pb-[0.5em] rtl:-mb-[0.5em] rtl:pt-[0.4em] rtl:-mt-[0.4em]">
+                <span className="hero-gold gold-text inline-block will-change-transform">{t.hero.gold}</span>
               </span>
             </p>
           </div>
 
-          <p className="hero-fade hero-reveal invisible-pre mt-5 max-w-[31rem] text-[15px] leading-relaxed text-ivory/70 short:mt-3 short:leading-snug lg:mt-7 lg:text-[17px]">
-            Breakfast, lunch, dinner and snacks — with the protein, carbs and fat already counted for you.
+          <p className="hero-fade hero-reveal invisible-pre mt-5 max-w-[31rem] text-[15px] leading-relaxed text-ivory/70 short:mt-3 short:leading-snug lg:mt-7 lg:text-[17px] rtl:text-base rtl:lg:text-lg">
+            {t.hero.sub}
           </p>
 
           <div className="mt-7 flex flex-wrap items-center justify-center gap-2.5 short:mt-5 sm:gap-3 lg:justify-start">
             <span className="hero-fade hero-reveal invisible-pre inline-flex">
               <a href="#menu" className="btn btn-gold">
-                See the menu
-                <Arrow />
+                {t.hero.seeMenu}
+                <Arrow className="h-3 w-5 rtl:-scale-x-100" />
               </a>
             </span>
             <span className="hero-fade hero-reveal invisible-pre inline-flex">
-              <a href={helloLink} target="_blank" rel="noopener noreferrer" className="btn btn-line">
+              <a href={whatsappLink(t.wa.hello)} target="_blank" rel="noopener noreferrer" className="btn btn-line">
                 <WhatsAppIcon className="h-4 w-4 text-wa" />
-                Order now
+                {t.orderNow}
               </a>
             </span>
           </div>
 
           <dl className="hero-fade hero-reveal invisible-pre mt-12 hidden gap-9 lg:flex">
             {[
-              [String(stats.meals), "meals on the menu"],
-              [`${stats.topProtein.p} g`, "protein in one meal"],
-              [money(stats.from), "meals start at"],
+              [String(stats.meals), t.hero.stats[0]],
+              [`${stats.topProtein.p} ${t.g}`, t.hero.stats[1]],
+              [money(stats.from), t.hero.stats[2]],
             ].map(([n, label]) => (
-              <div key={label} className="flex flex-col-reverse border-l border-gold/35 pl-4">
-                <dt className="mt-1.5 font-cond text-xs font-semibold uppercase tracking-[0.26em] text-ivory/55">{label}</dt>
+              <div key={label} className="flex flex-col-reverse border-s border-gold/35 ps-4">
+                <dt className="mt-1.5 font-cond text-xs font-semibold uppercase tracking-[0.26em] text-ivory/55 rtl:text-sm">{label}</dt>
                 <dd className="font-display text-[38px] leading-none text-ivory">{n}</dd>
               </div>
             ))}
@@ -226,14 +231,14 @@ export default function Hero() {
       </div>
 
       <div className="hero-chrome pointer-events-none absolute inset-0 z-10" aria-hidden="true">
-        <div className="hero-reveal invisible-pre absolute left-4 top-1/2 hidden -translate-y-1/2 font-cond text-xs font-semibold uppercase tracking-[0.5em] text-ivory/35 [writing-mode:vertical-rl] 2xl:block">
-          P · C · F — counted in grams
+        <div className="hero-reveal invisible-pre absolute start-4 top-1/2 hidden -translate-y-1/2 font-cond text-xs font-semibold uppercase tracking-[0.5em] text-ivory/35 [writing-mode:vertical-rl] 2xl:block">
+          {t.hero.left}
         </div>
-        <div className="hero-reveal invisible-pre absolute right-4 top-1/2 hidden -translate-y-1/2 font-cond text-xs font-semibold uppercase tracking-[0.5em] text-ivory/35 [writing-mode:vertical-rl] 2xl:block">
-          Breakfast — Lunch — Dinner — Snacks
+        <div className="hero-reveal invisible-pre absolute end-4 top-1/2 hidden -translate-y-1/2 font-cond text-xs font-semibold uppercase tracking-[0.5em] text-ivory/35 [writing-mode:vertical-rl] 2xl:block">
+          {t.hero.right}
         </div>
         <div className="hero-reveal invisible-pre absolute bottom-5 left-1/2 flex -translate-x-1/2 flex-col items-center gap-2.5 [@media(max-height:800px)]:hidden">
-          <span className="pl-[0.5em] font-cond text-xs font-semibold uppercase tracking-[0.5em] text-ivory/55">Scroll</span>
+          <span className="pl-[0.5em] font-cond text-xs font-semibold uppercase tracking-[0.5em] text-ivory/55 rtl:pl-0 rtl:text-sm">{t.hero.scroll}</span>
           <span className="relative block h-9 w-px overflow-hidden bg-ivory/15">
             <span className="scroll-tick absolute inset-x-0 top-0 h-1/2 bg-gold" />
           </span>

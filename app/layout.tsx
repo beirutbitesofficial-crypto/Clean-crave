@@ -1,7 +1,11 @@
 import type { Metadata, Viewport } from "next";
 import { Anton, Barlow_Condensed, Manrope, Playfair_Display } from "next/font/google";
+import localFont from "next/font/local";
 import "./globals.css";
+import SkipLink from "@/components/SkipLink";
 import { CartProvider } from "@/lib/cart";
+import { LangProvider } from "@/lib/i18n";
+import { langBootScript } from "@/lib/lang";
 import { stats } from "@/lib/menu";
 import { site } from "@/lib/site";
 
@@ -9,6 +13,50 @@ const display = Anton({ weight: "400", subsets: ["latin"], variable: "--font-ant
 const cond = Barlow_Condensed({ weight: ["500", "600", "700"], subsets: ["latin"], variable: "--font-barlow", display: "swap" });
 const sans = Manrope({ subsets: ["latin"], variable: "--font-manrope", display: "swap" });
 const serif = Playfair_Display({ subsets: ["latin"], style: ["normal", "italic"], variable: "--font-playfair", display: "swap" });
+
+/*
+ * Arabic faces (all SIL Open Font License, files in app/fonts). Each is limited to Arabic letters, so
+ * numbers, prices and P · C · F keep the brand's Latin fonts, and the files only download once Arabic
+ * is actually on screen. `size-adjust` sets Arabic a little larger, where it reads at the same weight.
+ */
+const arDisplay = localFont({
+  src: "./fonts/noto-kufi-arabic-800.woff2",
+  weight: "100 900",
+  variable: "--font-ar-display",
+  display: "swap",
+  preload: false,
+  adjustFontFallback: false,
+  declarations: [
+    { prop: "unicode-range", value: "U+0600-06FF, U+0750-077F, U+08A0-08FF, U+FB50-FDFF, U+FE70-FEFC, U+200C-200F" },
+    { prop: "size-adjust", value: "100%" },
+  ],
+});
+const arText = localFont({
+  src: "./fonts/noto-sans-arabic.woff2",
+  weight: "100 900",
+  variable: "--font-ar-text",
+  display: "swap",
+  preload: false,
+  adjustFontFallback: false,
+  declarations: [
+    { prop: "unicode-range", value: "U+0600-06FF, U+0750-077F, U+08A0-08FF, U+FB50-FDFF, U+FE70-FEFC, U+200C-200F" },
+    { prop: "size-adjust", value: "112%" },
+  ],
+});
+const arSerif = localFont({
+  src: [
+    { path: "./fonts/amiri-400.woff2", weight: "400" },
+    { path: "./fonts/amiri-700.woff2", weight: "700" },
+  ],
+  variable: "--font-ar-serif",
+  display: "swap",
+  preload: false,
+  adjustFontFallback: false,
+  declarations: [
+    { prop: "unicode-range", value: "U+0600-06FF, U+0750-077F, U+08A0-08FF, U+FB50-FDFF, U+FE70-FEFC, U+200C-200F" },
+    { prop: "size-adjust", value: "122%" },
+  ],
+});
 
 const description = `${site.name} — ${stats.meals} macro-counted meals for breakfast, lunch, dinner and snacks. See the protein, carbs and fat in every meal, build your order and send it on WhatsApp.`;
 
@@ -32,18 +80,20 @@ export const viewport: Viewport = {
   viewportFit: "cover",
 };
 
+const fonts = [display, cond, sans, serif, arDisplay, arText, arSerif].map((f) => f.variable).join(" ");
+
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en" className={`${display.variable} ${cond.variable} ${sans.variable} ${serif.variable}`} suppressHydrationWarning>
+    <html lang="en" dir="ltr" className={fonts} suppressHydrationWarning>
       <head>
-        {/* Marks JS as available before paint so intro elements can start hidden without a flash. */}
-        <script dangerouslySetInnerHTML={{ __html: "document.documentElement.classList.add('js')" }} />
+        {/* Before paint: marks JS as available and applies the remembered language and direction. */}
+        <script dangerouslySetInnerHTML={{ __html: langBootScript }} />
       </head>
       <body className="bg-ink font-sans text-ivory antialiased">
-        <a href="#menu" className="sr-only focus:not-sr-only focus:fixed focus:left-4 focus:top-4 focus:z-[200] focus:rounded-full focus:bg-gold focus:px-5 focus:py-3 focus:text-sm focus:font-bold focus:text-ink">
-          Skip to the menu
-        </a>
-        <CartProvider>{children}</CartProvider>
+        <LangProvider>
+          <SkipLink />
+          <CartProvider>{children}</CartProvider>
+        </LangProvider>
         <div className="grain" aria-hidden="true" />
       </body>
     </html>

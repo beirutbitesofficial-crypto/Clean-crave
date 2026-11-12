@@ -20,6 +20,3 @@ export const site = {
 export function whatsappLink(text: string) {
   return `https://wa.me/${site.whatsapp.replace(/\D/g, "")}?text=${encodeURIComponent(text)}`;
 }
-
-/** Plain "hello" link for the Order buttons when nothing is in the order yet. */
-export const helloLink = whatsappLink(`Hello ${site.name}! I'd like to order.`);

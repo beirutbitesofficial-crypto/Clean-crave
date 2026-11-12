@@ -3,7 +3,8 @@
 import { useRef } from "react";
 import { useCart } from "@/lib/cart";
 import { type Conditions, gsap, MQ, useGSAP } from "@/lib/gsap";
-import { helloLink, site } from "@/lib/site";
+import { useLang } from "@/lib/i18n";
+import { site, whatsappLink } from "@/lib/site";
 import { WhatsAppIcon } from "./Icons";
 import { SplitWords } from "./SplitText";
 
@@ -11,6 +12,8 @@ import { SplitWords } from "./SplitText";
 export default function Order() {
   const root = useRef<HTMLElement>(null);
   const { count, setOpen } = useCart();
+  const { t, lang } = useLang();
+  const helloLink = whatsappLink(t.wa.hello);
 
   useGSAP(
     () => {
@@ -55,7 +58,7 @@ export default function Order() {
 
       return () => mm.revert();
     },
-    { scope: root }
+    { scope: root, dependencies: [lang], revertOnUpdate: true }
   );
 
   return (
@@ -70,37 +73,39 @@ export default function Order() {
 
       <div className="relative mx-auto grid max-w-[1400px] gap-12 lg:grid-cols-[1.25fr_1fr] lg:items-end">
         <div>
-          <p className="order-eyebrow font-cond text-[13px] font-bold uppercase tracking-[0.42em] text-ink/75">Hungry?</p>
-          <h2 id="order-title" className="order-title mt-3 font-serif text-[19vw] leading-[0.9] sm:text-[132px] lg:text-[clamp(120px,11.5vw,196px)]">
-            <span className="sr-only">Crave clean.</span>
+          <p className="order-eyebrow font-cond text-[13px] font-bold uppercase tracking-[0.42em] text-ink/75 rtl:text-lg">{t.order.eyebrow}</p>
+          <h2 id="order-title" className="order-title mt-3 font-serif text-[19vw] leading-[0.9] sm:text-[132px] lg:text-[clamp(120px,11.5vw,196px)] rtl:mt-6 rtl:font-bold rtl:leading-[1.2] rtl:lg:mt-10">
+            <span className="sr-only">
+              {t.order.l1} {t.order.l2}
+            </span>
             <span aria-hidden="true">
-              <SplitWords text="Crave" />
+              <SplitWords text={t.order.l1} />
               <br />
-              <SplitWords text="clean." wordClass="italic pr-[0.06em]" />
+              <SplitWords text={t.order.l2} wordClass="italic pe-[0.06em]" />
             </span>
           </h2>
         </div>
 
         <div className="order-zone lg:pb-5">
-          <p className="order-fade max-w-[26rem] text-lg leading-relaxed text-ink/85">Build your order from the menu, or just message us what you feel like. Either way it lands on WhatsApp.</p>
+          <p className="order-fade max-w-[26rem] text-lg leading-relaxed text-ink/85 rtl:text-xl rtl:leading-relaxed">{t.order.text}</p>
           <div className="order-fade mt-7">
             <a href={helloLink} target="_blank" rel="noopener noreferrer" className="order-magnet btn btn-ink !min-h-16 !px-8 !text-[13px]">
               <WhatsAppIcon className="h-5 w-5 text-wa" />
-              Order now
+              {t.orderNow}
             </a>
           </div>
           <p className="order-fade mt-7 font-display text-[11.5vw] leading-none tracking-[0.01em] sm:text-6xl lg:text-[clamp(46px,4.2vw,68px)]">
-            <a href={helloLink} target="_blank" rel="noopener noreferrer" dir="ltr" className="underline-offset-[0.14em] hover:underline">
+            <a href={helloLink} target="_blank" rel="noopener noreferrer" dir="ltr" lang="en" className="inline-block underline-offset-[0.14em] hover:underline">
               {site.phone}
             </a>
           </p>
           <div className="order-fade mt-6 flex flex-wrap gap-2">
-            <a href="#menu" className="inline-flex min-h-11 items-center rounded-full border border-ink/35 px-5 text-xs font-extrabold uppercase tracking-[0.22em] transition-colors hover:bg-ink hover:text-ivory">
-              Back to the menu
+            <a href="#menu" className="inline-flex min-h-11 items-center rounded-full border border-ink/35 px-5 text-xs font-extrabold uppercase tracking-[0.22em] transition-colors hover:bg-ink hover:text-ivory rtl:text-base">
+              {t.backToMenu}
             </a>
             {count > 0 && (
-              <button type="button" onClick={() => setOpen(true)} className="inline-flex min-h-11 items-center rounded-full border border-ink/35 px-5 text-xs font-extrabold uppercase tracking-[0.22em] transition-colors hover:bg-ink hover:text-ivory">
-                Review my order · {count}
+              <button type="button" onClick={() => setOpen(true)} className="inline-flex min-h-11 items-center rounded-full border border-ink/35 px-5 text-xs font-extrabold uppercase tracking-[0.22em] transition-colors hover:bg-ink hover:text-ivory rtl:text-base">
+                {t.order.review} · {count}
               </button>
             )}
           </div>
