@@ -219,12 +219,17 @@ export default function Menu() {
         ScrollTrigger.batch(cards, {
           start: "top 92%",
           once: true,
-          onEnter: (batch) =>
-            batch.forEach((card, i) => {
-              const delay = i * 0.09;
-              gsap.to(card, { opacity: 1, y: 0, duration: 1.1, delay, ease: "expo.out", clearProps: "transform" });
-              gsap.to(card.querySelectorAll(".ring-arc"), { strokeDashoffset: 0, duration: 1.1, delay: delay + 0.2, stagger: 0.16, ease: "power2.inOut" });
-            }),
+          onEnter: (batch) => {
+            // Only cards you can actually see take turns; anything already scrolled past just appears,
+            // so the ones on screen never wait behind it (after a filter or language change mid-menu).
+            let turn = 0;
+            batch.forEach((card) => {
+              const passed = card.getBoundingClientRect().bottom < 0;
+              const delay = passed ? 0 : turn++ * 0.09;
+              gsap.to(card, { opacity: 1, y: 0, duration: passed ? 0.01 : 1.1, delay, ease: "expo.out", clearProps: "transform" });
+              gsap.to(card.querySelectorAll(".ring-arc"), { strokeDashoffset: 0, duration: passed ? 0.01 : 1.1, delay: passed ? 0 : delay + 0.2, stagger: passed ? 0 : 0.16, ease: "power2.inOut" });
+            });
+          },
         });
       });
 
