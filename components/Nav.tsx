@@ -37,7 +37,7 @@ export default function Nav() {
       <div className="mx-auto flex max-w-[1500px] items-center justify-between gap-2 px-5 py-4 lg:px-12 lg:py-5">
         <a href="#top" aria-label={t.nav.home} className="flex min-h-11 items-center gap-2.5">
           <img src="/brand/emblem.webp" width={370} height={269} alt="" className="h-9 w-auto" />
-          <Wordmark className="text-[19px]" />
+          <Wordmark className="text-[19px] max-[379px]:hidden" />
         </a>
         <nav aria-label={t.nav.main} className="flex items-center gap-1 text-xs font-bold uppercase tracking-[0.24em] rtl:text-[15px]">
           <a href="#macros" className={link}>

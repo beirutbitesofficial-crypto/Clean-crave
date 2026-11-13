@@ -1,8 +1,10 @@
 "use client";
 
 import { createContext, useCallback, useContext, useEffect, useLayoutEffect, useMemo, useState } from "react";
+import { flushSync } from "react-dom";
 import { type Lang, LANG_STORAGE as STORAGE } from "./lang";
 import type { Category, Item } from "./menu";
+import { holdPlace } from "./place";
 import { site } from "./site";
 
 export type { Lang };
@@ -353,7 +355,11 @@ export function LangProvider({ children }: { children: React.ReactNode }) {
   }, [lang, ready]);
 
   const setLang = useCallback((l: Lang) => {
-    setLangState(l);
+    // The whole page is re-set in the other language in one go, then scrolled back to the meal the
+    // reader was looking at — all before the next paint, so nothing appears to jump.
+    const backToPlace = holdPlace();
+    flushSync(() => setLangState(l));
+    backToPlace();
     try {
       localStorage.setItem(STORAGE, l);
     } catch {}

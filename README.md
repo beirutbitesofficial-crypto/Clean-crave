@@ -23,17 +23,30 @@ npm run build && npm start   # production (Vercel deploys it automatically on pu
 
 Everything respects "reduce motion", and the page still reads normally with JavaScript off.
 
+## English / Arabic
+
+The **EN | عربي** switch is in the top bar, at the end of the menu's sticky bar and in the footer.
+Arabic turns the whole page right-to-left: every sentence, every meal name and ingredient list, the order drawer.
+
+- The choice is remembered on the visitor's phone.
+- A link ending in **`?lang=ar`** opens the site in Arabic (handy for an Arabic Instagram link); `?lang=en` forces English. Without either, new visitors start in English.
+- P · C · F, prices and numbers look the same in both languages, as on the printed menu.
+- The WhatsApp order greets in the visitor's language, but meal names are always sent in English — the names the kitchen has on its own menu.
+- Switching keeps your place: the meal you were looking at stays where it was.
+
 ## Where to change things
 
 | What | Where |
 | --- | --- |
-| **The menu** — meals, prices, calories, P / C / F | [`lib/menu.ts`](lib/menu.ts) |
+| **The menu** — meals, prices, calories, P / C / F, and each meal's Arabic name and ingredients (`ar`) | [`lib/menu.ts`](lib/menu.ts) |
+| Every other sentence on the site, in English and Arabic side by side | [`lib/i18n.tsx`](lib/i18n.tsx) |
 | WhatsApp number, Instagram link, site address, preview mode | [`lib/site.ts`](lib/site.ts) |
 | Colours and fonts | top of [`app/globals.css`](app/globals.css) and [`app/layout.tsx`](app/layout.tsx) |
 | Hero animation | [`components/Hero.tsx`](components/Hero.tsx) |
 | Pinned P · C · F scene (timeline map at the top of the file) | [`components/MacroScene.tsx`](components/MacroScene.tsx) |
 | Order drawer and the WhatsApp message | [`components/Cart.tsx`](components/Cart.tsx), [`lib/cart.tsx`](lib/cart.tsx) |
 | Logo files | `public/brand/` |
+| Arabic fonts (Noto Kufi Arabic, Noto Sans Arabic, Amiri — all open licence) | `app/fonts/`, set up in [`app/layout.tsx`](app/layout.tsx) |
 
 The numbers in the hero and the stats band (how many meals, most protein, lightest meal, lowest price) are worked out from `lib/menu.ts`, so they stay right when the menu changes.
 
@@ -50,6 +63,12 @@ The numbers in the hero and the stats band (how many meals, most protein, lighte
 
 The menu works without photos — each meal shows its calories inside the macro ring.
 To put a photo in the ring instead: save it as `public/menu/<name>.webp` (square, about 400 px) and add `img: "<name>"` to that meal in `lib/menu.ts`.
+
+### Arabic wording to review
+
+The Arabic was written for this site, not taken from a printed Arabic menu, so read it once before going live:
+meal names and ingredients in `lib/menu.ts`, everything else in `lib/i18n.tsx`. It uses everyday Lebanese food words
+(بندورة، حبش، فريز، حامض، كبيس) and "سعرة" for kcal, "غ" for grams.
 
 ### Two things to confirm on the printed menu
 
