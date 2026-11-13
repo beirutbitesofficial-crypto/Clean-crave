@@ -191,18 +191,6 @@ export const menu: Category[] = [
         c: 15,
         f: 11,
       },
-      {
-        id: "chicken-caesar-salad",
-        ar: { name: "سلطة سيزر بالدجاج", desc: "ستيك لحم قليل الدهن مطهو، خس مقرمش، لبن يوناني، مايونيز لايت، خردل، خل الأرز، وفلفل أسود." },
-        name: "Chicken Caesar Salad",
-        // As printed on the menu (the name says chicken, the ingredients say steak) — confirm with the kitchen.
-        desc: "Cooked lean steak, crisp lettuce, Greek yogurt, light mayonnaise, mustard, rice vinegar, and black pepper.",
-        price: 10,
-        kcal: 500,
-        p: 60,
-        c: 6,
-        f: 25,
-      },
     ],
   },
   {
