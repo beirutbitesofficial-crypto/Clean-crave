@@ -203,7 +203,14 @@ export function CartDrawer() {
               </p>
               <p className="font-display text-[34px] leading-none text-ivory">{money(totals.price)}</p>
             </div>
-            <a href={orderLink} target="_blank" rel="noopener noreferrer" className="btn btn-gold w-full !min-h-14">
+            <a
+              href={orderLink}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="btn btn-gold w-full !min-h-14"
+              // Empty the order once it has gone to WhatsApp. Deferred so the link still carries the full order.
+              onClick={() => setTimeout(() => (clear(), setOpen(false)), 800)}
+            >
               <WhatsAppIcon className="h-5 w-5" />
               {t.cart.send}
             </a>
