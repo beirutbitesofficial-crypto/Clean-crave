@@ -3,7 +3,8 @@
 import { useRef } from "react";
 import { gsap, useGSAP } from "@/lib/gsap";
 import { useLang } from "@/lib/i18n";
-import { site, whatsappLink } from "@/lib/site";
+import { useContent } from "@/lib/content";
+import { site } from "@/lib/site";
 import { WhatsAppIcon } from "./Icons";
 import LangToggle from "./LangToggle";
 
@@ -11,6 +12,7 @@ import LangToggle from "./LangToggle";
 export default function Footer() {
   const root = useRef<HTMLElement>(null);
   const { t } = useLang();
+  const { contact, whatsappLink } = useContent();
   const links = [
     [t.nav.macros, "#macros"],
     [t.nav.menu, "#menu"],
@@ -48,7 +50,7 @@ export default function Footer() {
             <WhatsAppIcon className="h-5 w-5 text-wa" />
             <span className="font-cond text-sm font-semibold uppercase tracking-[0.3em] text-gold rtl:text-base">{t.orderNow}</span>
             <span dir="ltr" lang="en" className="font-display text-2xl leading-none tracking-[0.02em]">
-              {site.phone}
+              {contact.phone}
             </span>
           </a>
           <nav aria-label={t.footer.nav} className="foot-fade">
@@ -60,9 +62,9 @@ export default function Footer() {
                   </a>
                 </li>
               ))}
-              {site.instagram && (
+              {contact.instagram && (
                 <li>
-                  <a href={site.instagram} target="_blank" rel="noopener noreferrer" className="inline-flex min-h-11 items-center transition-colors hover:text-gold">
+                  <a href={contact.instagram} target="_blank" rel="noopener noreferrer" className="inline-flex min-h-11 items-center transition-colors hover:text-gold">
                     {t.footer.instagram}
                   </a>
                 </li>

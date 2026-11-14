@@ -4,7 +4,8 @@ import { useRef } from "react";
 import { useCart } from "@/lib/cart";
 import { type Conditions, gsap, MQ, useGSAP } from "@/lib/gsap";
 import { useLang } from "@/lib/i18n";
-import { site, whatsappLink } from "@/lib/site";
+import { useContent } from "@/lib/content";
+
 import { WhatsAppIcon } from "./Icons";
 import { SplitWords } from "./SplitText";
 
@@ -13,6 +14,7 @@ export default function Order() {
   const root = useRef<HTMLElement>(null);
   const { count, setOpen } = useCart();
   const { t, lang } = useLang();
+  const { contact, whatsappLink } = useContent();
   const helloLink = whatsappLink(t.wa.hello);
 
   useGSAP(
@@ -96,7 +98,7 @@ export default function Order() {
           </div>
           <p className="order-fade mt-7 font-display text-[11.5vw] leading-none tracking-[0.01em] sm:text-6xl lg:text-[clamp(46px,4.2vw,68px)]">
             <a href={helloLink} target="_blank" rel="noopener noreferrer" dir="ltr" lang="en" className="inline-block underline-offset-[0.14em] hover:underline">
-              {site.phone}
+              {contact.phone}
             </a>
           </p>
           <div className="order-fade mt-6 flex flex-wrap gap-2">

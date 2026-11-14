@@ -2,8 +2,8 @@
 
 import { createContext, useCallback, useContext, useEffect, useMemo, useState } from "react";
 import { useLang } from "./i18n";
-import { findItem, type Item, money } from "./menu";
-import { whatsappLink } from "./site";
+import { useContent } from "./content";
+import { type Item, money } from "./menu";
 
 export type Line = { id: string; qty: number };
 export type FullLine = Line & { item: Item };
@@ -40,6 +40,7 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
   const [notes, setNotes] = useState("");
   const [restored, setRestored] = useState(false);
   const { t } = useLang();
+  const { findItem, whatsappLink } = useContent();
 
   // Restore (per-device convenience only; ignore if storage is blocked).
   useEffect(() => {
@@ -65,7 +66,7 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
     if (!findItem(id)) return;
     setRaw((ls) => (ls.some((l) => l.id === id) ? ls.map((l) => (l.id === id ? { ...l, qty: l.qty + 1 } : l)) : [...ls, { id, qty: 1 }]));
     setPulse((p) => p + 1);
-  }, []);
+  }, [findItem]);
 
   const setQty = useCallback((id: string, qty: number) => {
     setRaw((ls) => (qty <= 0 ? ls.filter((l) => l.id !== id) : ls.map((l) => (l.id === id ? { ...l, qty: Math.min(qty, 99) } : l))));
@@ -115,7 +116,7 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
       pulse,
       orderLink: whatsappLink(message),
     };
-  }, [raw, open, add, setQty, name, notes, pulse, t]);
+  }, [raw, open, add, setQty, name, notes, pulse, t, findItem, whatsappLink]);
 
   return <CartContext.Provider value={value}>{children}</CartContext.Provider>;
 }

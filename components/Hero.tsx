@@ -3,8 +3,9 @@
 import { useRef } from "react";
 import { type Conditions, gsap, MQ, ScrollTrigger, useGSAP } from "@/lib/gsap";
 import { useLang } from "@/lib/i18n";
-import { money, stats } from "@/lib/menu";
-import { site, whatsappLink } from "@/lib/site";
+import { useContent } from "@/lib/content";
+import { money } from "@/lib/menu";
+import { site } from "@/lib/site";
 import GoldDust from "./GoldDust";
 import { Arrow, WhatsAppIcon } from "./Icons";
 import { SplitChars } from "./SplitText";
@@ -24,6 +25,7 @@ const at = (deg: number) => {
 export default function Hero() {
   const root = useRef<HTMLElement>(null);
   const { t, lang, ready } = useLang();
+  const { stats, whatsappLink } = useContent();
 
   // Runs once, as soon as the visitor's language is known — switching language later never replays the curtain.
   useGSAP(

@@ -4,7 +4,8 @@ import { useEffect, useRef, useState } from "react";
 import { useCart } from "@/lib/cart";
 import { useLang } from "@/lib/i18n";
 import { money } from "@/lib/menu";
-import { site, whatsappLink } from "@/lib/site";
+import { useContent } from "@/lib/content";
+
 import { Close, Minus, Plus, WhatsAppIcon } from "./Icons";
 import MacroRing from "./MacroRing";
 
@@ -17,6 +18,7 @@ export function OrderDock() {
   const [past, setPast] = useState(false);
   const [inMenu, setInMenu] = useState(false);
   const { t } = useLang();
+  const { contact, whatsappLink } = useContent();
 
   useEffect(() => {
     const on = () => setPast(window.scrollY > window.innerHeight * 0.6);
@@ -55,7 +57,7 @@ export function OrderDock() {
       href={whatsappLink(t.wa.hello)}
       target="_blank"
       rel="noopener noreferrer"
-      aria-label={`${t.cart.whatsapp} — ${site.phone}`}
+      aria-label={`${t.cart.whatsapp} — ${contact.phone}`}
       inert={!show}
       className={`fixed bottom-[max(1.25rem,env(safe-area-inset-bottom))] end-5 z-50 grid h-14 w-14 place-items-center rounded-full bg-ink text-wa shadow-[inset_0_0_0_1px_rgba(221,182,94,0.55),0_16px_40px_-14px_rgba(0,0,0,0.9)] transition-all duration-500 hover:-translate-y-0.5 md:bottom-8 md:end-8 ${
         show ? "opacity-100" : "pointer-events-none translate-y-4 opacity-0"
@@ -70,6 +72,7 @@ export function CartDrawer() {
   const { lines, count, totals, open, setOpen, setQty, clear, name, setName, notes, setNotes, orderLink } = useCart();
   const closeBtn = useRef<HTMLButtonElement>(null);
   const { t, name: nameOf } = useLang();
+  const { contact } = useContent();
 
   useEffect(() => {
     if (!open) return;
@@ -217,7 +220,7 @@ export function CartDrawer() {
             <p className="mt-2.5 text-center text-xs text-ivory/55 rtl:text-sm">
               {t.cart.sendHint}{" "}
               <span dir="ltr" className="whitespace-nowrap text-ivory/80">
-                {site.phone}
+                {contact.phone}
               </span>
               .
             </p>

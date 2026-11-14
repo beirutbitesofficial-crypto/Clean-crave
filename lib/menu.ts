@@ -247,11 +247,6 @@ export const menu: Category[] = [
   },
 ];
 
-export const allItems: Item[] = menu.flatMap((c) => c.items);
-
-const byId = new Map(allItems.map((i) => [i.id, i]));
-export const findItem = (id: string) => byId.get(id);
-
 /** $7 · $7.50 · $28 */
 export const money = (n: number) => `$${Number.isInteger(n) ? n : n.toFixed(2)}`;
 
@@ -265,10 +260,12 @@ export const goals = [
 
 export type GoalId = (typeof goals)[number]["id"];
 
-/** Facts for the hero and stats band — always computed from the menu above, never typed by hand. */
-export const stats = {
-  meals: allItems.length,
-  topProtein: allItems.reduce((a, b) => (b.p > a.p ? b : a)),
-  lightest: Math.min(...allItems.map((i) => i.kcal)),
-  from: Math.min(...allItems.map((i) => i.price)),
-};
+/** Facts for the hero and stats band — always computed from the menu, never typed by hand. */
+export function menuStats(items: Item[]) {
+  return {
+    meals: items.length,
+    topProtein: items.reduce((a, b) => (b.p > a.p ? b : a)),
+    lightest: Math.min(...items.map((i) => i.kcal)),
+    from: Math.min(...items.map((i) => i.price)),
+  };
+}

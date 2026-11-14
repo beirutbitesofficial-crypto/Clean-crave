@@ -3,7 +3,8 @@
 import { useEffect, useState } from "react";
 import { useCart } from "@/lib/cart";
 import { useLang } from "@/lib/i18n";
-import { site, whatsappLink } from "@/lib/site";
+import { useContent } from "@/lib/content";
+
 import { WhatsAppIcon } from "./Icons";
 import LangToggle from "./LangToggle";
 
@@ -22,6 +23,7 @@ export default function Nav() {
   const [gone, setGone] = useState(false);
   const { count, setOpen } = useCart();
   const { t } = useLang();
+  const { contact, whatsappLink } = useContent();
 
   useEffect(() => {
     const on = () => setGone(window.scrollY > window.innerHeight * 0.6);
@@ -60,12 +62,12 @@ export default function Nav() {
               href={whatsappLink(t.wa.hello)}
               target="_blank"
               rel="noopener noreferrer"
-              aria-label={`${t.cart.whatsapp} — ${site.phone}`}
+              aria-label={`${t.cart.whatsapp} — ${contact.phone}`}
               className="ms-1 inline-flex min-h-11 min-w-11 items-center justify-center gap-2.5 rounded-full border border-ivory/20 text-ivory transition-colors hover:border-gold sm:px-4"
             >
               <WhatsAppIcon className="h-[18px] w-[18px] text-wa sm:h-4 sm:w-4" />
               <span dir="ltr" lang="en" className="hidden tracking-[0.12em] sm:inline">
-                {site.phone}
+                {contact.phone}
               </span>
             </a>
           )}

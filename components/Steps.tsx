@@ -3,19 +3,19 @@
 import { useRef } from "react";
 import { gsap, useGSAP } from "@/lib/gsap";
 import { useLang } from "@/lib/i18n";
-import { stats } from "@/lib/menu";
-import { site } from "@/lib/site";
+import { useContent } from "@/lib/content";
+
 import { SplitWords } from "./SplitText";
 
 /** Drops the phone number into a sentence, kept left-to-right so its groups never swap places in Arabic. */
-function withPhone(text: string) {
+function withPhone(text: string, phone: string) {
   if (!text.includes("{phone}")) return text;
   const [before, after] = text.split("{phone}");
   return (
     <>
       {before}
       <span dir="ltr" lang="en" className="whitespace-nowrap">
-        {site.phone}
+        {phone}
       </span>
       {after}
     </>
@@ -26,6 +26,7 @@ function withPhone(text: string) {
 export default function Steps() {
   const root = useRef<HTMLElement>(null);
   const { t, lang, name } = useLang();
+  const { stats, contact } = useContent();
 
   const facts = [
     { value: stats.meals, prefix: "", unit: "", label: t.steps.facts.meals },
@@ -122,7 +123,7 @@ export default function Steps() {
             </p>
             <div className="step-copy mt-4">
               <h3 className="font-serif text-[28px] leading-tight md:text-[34px] rtl:leading-snug">{s.title}</h3>
-              <p className="mt-2 max-w-[24rem] text-base leading-relaxed text-ivory/70 rtl:text-[17px]">{withPhone(s.text)}</p>
+              <p className="mt-2 max-w-[24rem] text-base leading-relaxed text-ivory/70 rtl:text-[17px]">{withPhone(s.text, contact.phone)}</p>
             </div>
           </li>
         ))}

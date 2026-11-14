@@ -4,17 +4,10 @@ import { useRef } from "react";
 import { useCart } from "@/lib/cart";
 import { type Conditions, gsap, MQ, useGSAP } from "@/lib/gsap";
 import { useLang } from "@/lib/i18n";
-import { money, stats } from "@/lib/menu";
+import { useContent } from "@/lib/content";
+import { money } from "@/lib/menu";
 import MacroRing from "./MacroRing";
 import { Plus } from "./Icons";
-
-const dish = stats.topProtein;
-
-const ROWS = [
-  { k: "p", letter: "P", word: "protein", grams: dish.p, tone: "text-protein", bar: "bg-protein" },
-  { k: "c", letter: "C", word: "carbs", grams: dish.c, tone: "text-carb", bar: "bg-carb" },
-  { k: "f", letter: "F", word: "fat", grams: dish.f, tone: "text-fat", bar: "bg-fat" },
-] as const;
 
 /**
  * "How to read the menu" — the page pins while the ring is drawn one macro at a time:
@@ -27,6 +20,12 @@ const ROWS = [
 export default function MacroScene() {
   const root = useRef<HTMLElement>(null);
   const { add, qtyOf, setOpen } = useCart();
+  const dish = useContent().stats.topProtein;
+  const ROWS = [
+    { k: "p", letter: "P", word: "protein", grams: dish.p, tone: "text-protein", bar: "bg-protein" },
+    { k: "c", letter: "C", word: "carbs", grams: dish.c, tone: "text-carb", bar: "bg-carb" },
+    { k: "f", letter: "F", word: "fat", grams: dish.f, tone: "text-fat", bar: "bg-fat" },
+  ] as const;
   const inOrder = qtyOf(dish.id) > 0;
   const { t, lang, rtl, name } = useLang();
 

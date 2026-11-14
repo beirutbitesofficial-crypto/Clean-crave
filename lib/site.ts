@@ -17,6 +17,11 @@ export const site = {
   preview: true,
 };
 
-export function whatsappLink(text: string) {
-  return `https://wa.me/${site.whatsapp.replace(/\D/g, "")}?text=${encodeURIComponent(text)}`;
+/** The contact details the admin panel can change. */
+export type Contact = { whatsapp: string; phone: string; instagram: string };
+
+export const defaultContact: Contact = { whatsapp: site.whatsapp, phone: site.phone, instagram: site.instagram };
+
+export function whatsappUrl(number: string, text: string) {
+  return `https://wa.me/${number.replace(/\D/g, "")}?text=${encodeURIComponent(text)}`;
 }

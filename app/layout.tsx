@@ -6,8 +6,9 @@ import SkipLink from "@/components/SkipLink";
 import { CartProvider } from "@/lib/cart";
 import { LangProvider } from "@/lib/i18n";
 import { langBootScript } from "@/lib/lang";
-import { stats } from "@/lib/menu";
+import { ContentProvider } from "@/lib/content";
 import { site } from "@/lib/site";
+import { getContent } from "@/lib/store";
 
 const display = Anton({ weight: "400", subsets: ["latin"], variable: "--font-anton", display: "swap" });
 const cond = Barlow_Condensed({ weight: ["500", "600", "700"], subsets: ["latin"], variable: "--font-barlow", display: "swap" });
@@ -58,20 +59,21 @@ const arSerif = localFont({
   ],
 });
 
-const description = `${site.name} — ${stats.meals} macro-counted meals for breakfast, lunch, dinner and snacks. See the protein, carbs and fat in every meal, build your order and send it on WhatsApp.`;
-
-export const metadata: Metadata = {
-  metadataBase: site.url ? new URL(site.url) : undefined,
-  title: `${site.name} — ${site.tagline}`,
-  description,
-  robots: site.preview ? { index: false, follow: false } : undefined,
-  openGraph: {
+export async function generateMetadata(): Promise<Metadata> {
+  const meals = (await getContent()).menu.reduce((n, c) => n + c.items.length, 0);
+  return {
+    metadataBase: site.url ? new URL(site.url) : undefined,
     title: `${site.name} — ${site.tagline}`,
-    description: "The full menu with protein, carbs and fat counted on every meal. Order on WhatsApp.",
-    type: "website",
-    images: [{ url: "/og.jpg", width: 1200, height: 630, alt: `${site.name} — ${site.tagline}` }],
-  },
-};
+    description: `${site.name} — ${meals} macro-counted meals for breakfast, lunch, dinner and snacks. See the protein, carbs and fat in every meal, build your order and send it on WhatsApp.`,
+    robots: site.preview ? { index: false, follow: false } : undefined,
+    openGraph: {
+      title: `${site.name} — ${site.tagline}`,
+      description: "The full menu with protein, carbs and fat counted on every meal. Order on WhatsApp.",
+      type: "website",
+      images: [{ url: "/og.jpg", width: 1200, height: 630, alt: `${site.name} — ${site.tagline}` }],
+    },
+  };
+}
 
 export const viewport: Viewport = {
   themeColor: "#070605",
@@ -82,7 +84,9 @@ export const viewport: Viewport = {
 
 const fonts = [display, cond, sans, serif, arDisplay, arText, arSerif].map((f) => f.variable).join(" ");
 
-export default function RootLayout({ children }: { children: React.ReactNode }) {
+export default async function RootLayout({ children }: { children: React.ReactNode }) {
+  // The menu and contact details as last saved in the admin panel.
+  const content = await getContent();
   return (
     <html lang="en" dir="ltr" className={fonts} suppressHydrationWarning>
       <head>
@@ -92,7 +96,9 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       <body className="bg-ink font-sans text-ivory antialiased">
         <LangProvider>
           <SkipLink />
-          <CartProvider>{children}</CartProvider>
+          <ContentProvider content={content}>
+            <CartProvider>{children}</CartProvider>
+          </ContentProvider>
         </LangProvider>
         <div className="grain" aria-hidden="true" />
       </body>

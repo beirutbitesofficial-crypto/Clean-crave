@@ -9,6 +9,9 @@ import Nav from "@/components/Nav";
 import Order from "@/components/Order";
 import Steps from "@/components/Steps";
 
+/** Rebuilt at once when the admin panel saves; this is only the fallback. */
+export const revalidate = 3600;
+
 export default function Home() {
   return (
     <>

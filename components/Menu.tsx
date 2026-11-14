@@ -4,7 +4,8 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { useCart } from "@/lib/cart";
 import { gsap, ScrollTrigger, useGSAP } from "@/lib/gsap";
 import { useLang } from "@/lib/i18n";
-import { type Category, type GoalId, goals, type Item, menu, money } from "@/lib/menu";
+import { useContent } from "@/lib/content";
+import { type Category, type GoalId, goals, type Item, money } from "@/lib/menu";
 import { Minus, Plus } from "./Icons";
 import LangToggle from "./LangToggle";
 import MacroRing from "./MacroRing";
@@ -115,7 +116,7 @@ function MealCard({ item }: { item: Item }) {
   );
 }
 
-function CategoryBlock({ cat, items, index }: { cat: Category; items: Item[]; index: number }) {
+function CategoryBlock({ cat, items, index, of }: { cat: Category; items: Item[]; index: number; of: number }) {
   const kcals = items.map((i) => i.kcal);
   const lo = Math.min(...kcals);
   const hi = Math.max(...kcals);
@@ -129,7 +130,7 @@ function CategoryBlock({ cat, items, index }: { cat: Category; items: Item[]; in
           <p className="cat-meta flex items-center gap-3 font-cond text-[13px] font-semibold uppercase tracking-[0.4em] text-gold/80">
             {String(index + 1).padStart(2, "0")}
             <span className="cat-line h-px w-10 origin-left bg-gold/60 rtl:origin-right" />
-            {String(menu.length).padStart(2, "0")}
+            {String(of).padStart(2, "0")}
           </p>
           <h3 id={`cat-${cat.id}-title`} className="mt-2 font-display text-[19vw] uppercase leading-[0.92] tracking-[0.01em] sm:text-[112px] xl:text-[78px] rtl:mt-0 rtl:text-[17vw] rtl:leading-[1.4] rtl:sm:text-[96px] rtl:xl:text-[70px]">
             <span className="sr-only">{title(cat)}</span>
@@ -157,6 +158,7 @@ export default function Menu() {
   const root = useRef<HTMLElement>(null);
   const bar = useRef<HTMLDivElement>(null);
   const [goal, setGoal] = useState<GoalId>("all");
+  const { menu } = useContent();
   const [active, setActive] = useState(menu[0].id);
   const { t, lang, title } = useLang();
 
@@ -326,7 +328,7 @@ export default function Menu() {
 
       <div className="mx-auto max-w-[1400px]">
         {shown.map(({ cat, items, index }) => (
-          <CategoryBlock key={cat.id} cat={cat} items={items} index={index} />
+          <CategoryBlock key={cat.id} cat={cat} items={items} index={index} of={menu.length} />
         ))}
       </div>
     </section>

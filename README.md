@@ -78,3 +78,14 @@ meal names and ingredients in `lib/menu.ts`, everything else in `lib/i18n.tsx`. 
 ### The logo
 
 `public/brand/logo.webp` and `emblem.webp` were cut out of the 828 px artwork. A higher-resolution file (or the original vector) will make the logo sharper on large screens — replace the two files, keeping the names.
+
+## Admin panel
+
+`/admin` edits the menu (meals, prices, macros, sold out, categories) and the contact details. Saving updates the live site straight away.
+
+It needs three things in the Vercel project:
+
+- `ADMIN_USER` and `ADMIN_PASSWORD` (8+ characters) as environment variables — the sign-in.
+- A Blob store connected to the project (Storage → Create → Blob) — where edits are kept.
+
+Until something is saved, the site shows the menu in `lib/menu.ts`.
