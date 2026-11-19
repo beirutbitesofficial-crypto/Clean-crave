@@ -191,7 +191,7 @@ export default function Editor({ initial, canSave }: { initial: Content; canSave
       <main className="mx-auto max-w-3xl space-y-10 px-4 pt-8">
         {!canSave && (
           <p role="alert" className="rounded-2xl border border-[#ff9d8a]/40 bg-[#ff9d8a]/10 p-4 leading-relaxed text-[#ffc4b8]">
-            Storage is not connected yet, so edits can’t be saved. In Vercel open the project → Storage → Create → Blob, connect it to this project, then redeploy.
+            Storage is not connected yet, so edits can’t be saved. In Vercel connect a Blob store to this project (Storage), then redeploy.
           </p>
         )}
 

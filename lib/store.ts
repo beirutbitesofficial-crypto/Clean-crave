@@ -15,7 +15,8 @@ const PATHNAME = "cleancrave/content.json";
 const LOCAL = path.join(process.cwd(), ".data", "content.json");
 const ACCESS = ["private", "public"] as const;
 
-export const hasBlob = () => Boolean(process.env.BLOB_READ_WRITE_TOKEN);
+/** A Blob store is connected: Vercel sets a store id (newer projects) or a read-write token (older ones). */
+export const hasBlob = () => Boolean(process.env.BLOB_STORE_ID || process.env.BLOB_READ_WRITE_TOKEN);
 /** Edits can be saved: a Blob store is connected, or this is a laptop. */
 export const canSave = () => hasBlob() || !process.env.VERCEL;
 
