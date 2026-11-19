@@ -4,6 +4,7 @@ import { useEffect, useMemo, useState } from "react";
 import { logout, save, stats as loadStats } from "@/app/admin/actions";
 import type { Content, PromoCode } from "@/lib/content";
 import type { CodeStats } from "@/lib/store";
+import QrPoster from "./QrPoster";
 import { type Category, type Item, money } from "@/lib/menu";
 
 const field = "min-h-12 w-full rounded-xl border border-ivory/15 bg-ink px-3.5 text-base text-ivory placeholder:text-ivory/30 focus:border-gold/70 focus:outline-none";
@@ -362,6 +363,7 @@ const usd = (cents: number) => `$${(cents / 100).toFixed(2).replace(/\.00$/, "")
 
 function CodesSection({ codes, setCodes, stats }: { codes: PromoCode[]; setCodes: (fn: (codes: PromoCode[]) => PromoCode[]) => void; stats: CodeStats | null }) {
   const [copied, setCopied] = useState<number | null>(null);
+  const [qr, setQr] = useState<number | null>(null);
   // Read after the first paint, so the server and the browser draw the same page.
   const [origin, setOrigin] = useState("");
   useEffect(() => setOrigin(window.location.origin), []);
@@ -429,6 +431,9 @@ function CodesSection({ codes, setCodes, stats }: { codes: PromoCode[]; setCodes
                   >
                     {copied === i ? "Copied" : "Copy link"}
                   </button>
+                  <button type="button" className={small} onClick={() => setQr(i)}>
+                    QR code
+                  </button>
                 </div>
               )}
 
@@ -468,6 +473,10 @@ function CodesSection({ codes, setCodes, stats }: { codes: PromoCode[]; setCodes
             </div>
           );
         })}
+
+        {qr !== null && codes[qr] && (
+          <QrPoster code={codes[qr]} link={`${origin}/?ref=${encodeURIComponent(codes[qr].code.toUpperCase())}`} onClose={() => setQr(null)} />
+        )}
 
         <button type="button" className={`${small} w-full`} onClick={() => setCodes((cs) => [...cs, { code: "", partner: "", discount: 0, share: 10, active: true }])}>
           + Add a code

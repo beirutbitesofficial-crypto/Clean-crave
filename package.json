@@ -13,6 +13,7 @@
     "@vercel/blob": "^2.9.0",
     "gsap": "^3.15.0",
     "next": "^16.3.8",
+    "qrcode": "^1.5.4",
     "react": "^19.3.0",
     "react-dom": "^19.3.0",
     "server-only": "^0.0.1"
@@ -20,6 +21,7 @@
   "devDependencies": {
     "@tailwindcss/postcss": "^4.3.3",
     "@types/node": "^22.10.0",
+    "@types/qrcode": "^1.5.5",
     "@types/react": "^19.3.0",
     "@types/react-dom": "^19.3.0",
     "postcss": "^8.5.29",
@@ -28,5 +30,8 @@
   },
   "engines": {
     "node": ">=20.9"
+  },
+  "overrides": {
+    "zod": "^4.6.6"
   }
 }
