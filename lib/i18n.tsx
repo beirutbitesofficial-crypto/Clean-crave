@@ -150,24 +150,12 @@ const en = {
     hello: `Hello ${site.name}! I'd like to order.`,
     intro: `Hello ${site.name}! I'd like to order:`,
     total: "Total",
-    subtotal: "Subtotal",
-    discount: "Discount",
-    code: "Code",
+    order: "Order",
     macros: "Macros",
     name: "Name",
     notes: "Notes",
   },
 
-  promo: {
-    label: "Promo or referral code",
-    apply: "Apply",
-    checking: "Checking…",
-    bad: "That code isn’t valid.",
-    on: (code: string, pct: number) => (pct > 0 ? `${code} — ${pct}% off` : `${code} applied`),
-    remove: "Remove code",
-    subtotal: "Subtotal",
-    discount: "Discount",
-  },
 };
 
 export type Dict = typeof en;
@@ -302,24 +290,12 @@ const ar: Dict = {
     hello: `مرحباً ${site.name}! أودّ أن أطلب.`,
     intro: `مرحباً ${site.name}! أودّ أن أطلب:`,
     total: "المجموع",
-    subtotal: "المجموع قبل الخصم",
-    discount: "الخصم",
-    code: "الكود",
+    order: "رقم الطلب",
     macros: "الماكروز",
     name: "الاسم",
     notes: "ملاحظات",
   },
 
-  promo: {
-    label: "كود خصم أو إحالة",
-    apply: "تطبيق",
-    checking: "جارٍ التحقق…",
-    bad: "هذا الكود غير صالح.",
-    on: (code: string, pct: number) => (pct > 0 ? `${code} — خصم ${pct}%` : `تم تطبيق ${code}`),
-    remove: "إزالة الكود",
-    subtotal: "المجموع",
-    discount: "الخصم",
-  },
 };
 
 const dicts: Record<Lang, Dict> = { en, ar };

@@ -23,18 +23,18 @@ async function findCode(raw: string) {
   return (await getContent()).codes.find((c) => c.code === code && c.active) ?? null;
 }
 
-/** Checks a promo or referral code. Only the code and its discount come back — never the partner's share. */
-export async function checkCode(raw: string): Promise<{ code: string; discount: number } | null> {
+/** Checks a partner's referral code. Only the code comes back — never the partner or their share. */
+export async function checkCode(raw: string): Promise<string | null> {
   if (!(await allowed("check", 60))) return null;
-  const found = await findCode(raw);
-  return found ? { code: found.code, discount: found.discount } : null;
+  return (await findCode(raw))?.code ?? null;
 }
 
 /**
- * Notes an order sent to WhatsApp with a code, so the admin panel can show each partner's orders.
+ * Notes an order sent to WhatsApp by someone who came through a partner's link,
+ * so the admin panel can show each partner's orders.
  * The total is worked out here from the saved menu, not taken from the browser.
  */
-export async function recordOrder(raw: string, lines: { id: string; qty: number }[]) {
+export async function recordOrder(raw: string, lines: { id: string; qty: number }[], orderNo: string) {
   if (!Array.isArray(lines) || !(await allowed("order", 20))) return;
   const found = await findCode(raw);
   if (!found || (process.env.VERCEL && !hasBlob())) return;
@@ -46,8 +46,8 @@ export async function recordOrder(raw: string, lines: { id: string; qty: number 
     if (item && !item.soldOut) cents += Math.round(item.price * 100) * qty;
   }
   if (cents <= 0) return;
-  cents = Math.round(cents * (1 - found.discount / 100));
+  const no = /^\d{5}$/.test(String(orderNo)) ? String(orderNo) : "";
   try {
-    await logOrder(found.code, cents);
+    await logOrder(found.code, cents, no);
   } catch {}
 }

@@ -4,13 +4,14 @@ import { createContext, useContext, useMemo } from "react";
 import { type Category, type Item, menu as defaultMenu, menuStats } from "./menu";
 import { type Contact, defaultContact, whatsappUrl } from "./site";
 
-/** A promo or referral code, e.g. one per partner gym. Never sent to the browser in full. */
+/**
+ * A partner's referral code, e.g. one per gym. It rides in the partner's link and QR code so the
+ * owner can tell which partner each order came from. Customers never see it.
+ */
 export type PromoCode = {
   code: string;
   /** Who the code belongs to, e.g. the gym's name. */
   partner: string;
-  /** Percent off for the customer (0 for a referral-only code). */
-  discount: number;
   /** Percent of each order the partner earns. */
   share: number;
   active: boolean;

@@ -77,18 +77,19 @@ export async function saveContent(content: Content) {
 const ORDERS = "cleancrave/orders/";
 const LOCAL_ORDERS = path.join(process.cwd(), ".data", "orders");
 
-export async function logOrder(code: string, cents: number) {
+export async function logOrder(code: string, cents: number, orderNo: string) {
   const now = new Date();
   const month = now.toISOString().slice(0, 7);
-  const file = `${now.getTime()}_${cents}_${Math.random().toString(36).slice(2, 8)}.json`;
+  const file = `${now.getTime()}_${cents}_${orderNo}_${Math.random().toString(36).slice(2, 6)}.json`;
   const rel = `${code}/${month}/${file}`;
-  const body = JSON.stringify({ code, cents, at: now.toISOString() });
+  const body = JSON.stringify({ code, cents, orderNo, at: now.toISOString() });
   if (hasBlob()) return putBlob(ORDERS + rel, body);
   await fs.mkdir(path.join(LOCAL_ORDERS, code, month), { recursive: true });
   await fs.writeFile(path.join(LOCAL_ORDERS, rel), body, "utf8");
 }
 
-export type CodeStats = Record<string, { month: { orders: number; cents: number }; all: { orders: number; cents: number } }>;
+export type CodeOrder = { no: string; at: number; cents: number };
+export type CodeStats = Record<string, { month: { orders: number; cents: number }; all: { orders: number; cents: number }; recent: CodeOrder[] }>;
 
 async function orderPaths(): Promise<string[]> {
   if (hasBlob()) {
@@ -113,9 +114,11 @@ export async function codeStats(): Promise<CodeStats> {
   const stats: CodeStats = {};
   for (const p of await orderPaths()) {
     const [code, m, file] = p.split(/[\\/]/);
-    const cents = Number(file?.split("_")[1]);
+    const [at, c, no] = (file ?? "").split("_");
+    const cents = Number(c);
     if (!code || !m || !Number.isFinite(cents)) continue;
-    const s = (stats[code] ??= { month: { orders: 0, cents: 0 }, all: { orders: 0, cents: 0 } });
+    const s = (stats[code] ??= { month: { orders: 0, cents: 0 }, all: { orders: 0, cents: 0 }, recent: [] });
+    s.recent.push({ no: /^\d{3,8}$/.test(no ?? "") ? no : "", at: Number(at) || 0, cents });
     s.all.orders++;
     s.all.cents += cents;
     if (m === month) {
@@ -123,6 +126,8 @@ export async function codeStats(): Promise<CodeStats> {
       s.month.cents += cents;
     }
   }
+  // Newest first; the admin panel lists the latest few per partner.
+  for (const s of Object.values(stats)) s.recent = s.recent.sort((a, b) => b.at - a.at).slice(0, 25);
   return stats;
 }
 
@@ -210,7 +215,6 @@ export function sanitize(input: unknown): { ok: true; content: Content } | { ok:
     codes.push({
       code,
       partner: text(k.partner, 60),
-      discount: Math.round(num(k.discount, 90) * 10) / 10,
       share: Math.round(num(k.share, 100) * 10) / 10,
       active: k.active !== false,
     });

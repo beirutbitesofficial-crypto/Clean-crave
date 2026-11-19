@@ -9,7 +9,8 @@ import { type Item, money } from "./menu";
 export type Line = { id: string; qty: number };
 export type FullLine = Line & { item: Item };
 export type Totals = { price: number; kcal: number; p: number; c: number; f: number };
-export type Promo = { code: string; discount: number };
+/** The partner (e.g. a gym) whose link or QR code brought this visitor. Never shown to them. */
+export type Ref = { code: string; at: number };
 
 type Cart = {
   lines: FullLine[];
@@ -29,19 +30,16 @@ type Cart = {
   pulse: number;
   /** wa.me link with the whole order written out. */
   orderLink: string;
-  /** The promo or referral code in use, if any, and what it takes off. */
-  promo: Promo | null;
-  discount: number;
-  /** What the customer pays: the meals less the discount. */
-  toPay: number;
-  applyCode: (code: string) => Promise<boolean>;
-  removeCode: () => void;
   /** Call when the order goes to WhatsApp. */
   sent: () => void;
 };
 
 const CartContext = createContext<Cart | null>(null);
 const STORAGE = "cleancrave.order.v1";
+/** A partner gets the visitor's orders for this long after the visitor opened their link. */
+const REF_DAYS = 30;
+/** Every order carries a short number, so the kitchen and the admin panel can point at the same order. */
+const newOrderNo = () => String(Math.floor(10000 + Math.random() * 90000));
 
 export function CartProvider({ children }: { children: React.ReactNode }) {
   const [raw, setRaw] = useState<Line[]>([]);
@@ -49,7 +47,8 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
   const [pulse, setPulse] = useState(0);
   const [name, setName] = useState("");
   const [notes, setNotes] = useState("");
-  const [promo, setPromo] = useState<Promo | null>(null);
+  const [ref, setRef] = useState<Ref | null>(null);
+  const [orderNo, setOrderNo] = useState("");
   const [restored, setRestored] = useState(false);
   const { t } = useLang();
   const { findItem, whatsappLink } = useContent();
@@ -57,24 +56,23 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
   // Restore (per-device convenience only; ignore if storage is blocked).
   useEffect(() => {
     try {
-      const saved = JSON.parse(localStorage.getItem(STORAGE) || "null") as { lines?: Line[]; name?: string; notes?: string; promo?: Promo | null } | null;
+      const saved = JSON.parse(localStorage.getItem(STORAGE) || "null") as { lines?: Line[]; name?: string; notes?: string; ref?: Ref | null } | null;
       if (saved) {
         setRaw((saved.lines ?? []).filter((l) => findItem(l.id) && l.qty > 0));
         setName(saved.name ?? "");
         setNotes(saved.notes ?? "");
-        // Re-checked, in case the code was switched off or its discount changed since.
-        if (saved.promo?.code) checkCode(saved.promo.code).then(setPromo, () => setPromo(saved.promo ?? null));
+        if (saved.ref?.code && Date.now() - saved.ref.at < REF_DAYS * 864e5) setRef(saved.ref);
       }
     } catch {}
+    setOrderNo(newOrderNo());
     setRestored(true);
-    // A partner's link: cleancrave.com/?ref=CODE. The code sticks until it is removed.
+    // A partner's link or QR code: cleancrave.com/?ref=CODE. Checked quietly, then taken out of the address bar.
     try {
       const url = new URL(window.location.href);
-      const ref = url.searchParams.get("ref") || url.searchParams.get("code");
-      if (ref) {
-        checkCode(ref).then((p) => p && setPromo(p), () => {});
+      const code = url.searchParams.get("ref");
+      if (code) {
+        checkCode(code).then((found) => found && setRef({ code: found, at: Date.now() }), () => {});
         url.searchParams.delete("ref");
-        url.searchParams.delete("code");
         history.replaceState(history.state, "", url.pathname + url.search + url.hash);
       }
     } catch {}
@@ -84,19 +82,9 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     if (!restored) return;
     try {
-      localStorage.setItem(STORAGE, JSON.stringify({ lines: raw, name, notes, promo }));
+      localStorage.setItem(STORAGE, JSON.stringify({ lines: raw, name, notes, ref }));
     } catch {}
-  }, [raw, name, notes, promo, restored]);
-
-  const applyCode = useCallback(async (code: string) => {
-    try {
-      const found = await checkCode(code);
-      if (found) setPromo(found);
-      return Boolean(found);
-    } catch {
-      return false;
-    }
-  }, []);
+  }, [raw, name, notes, ref, restored]);
 
   const add = useCallback((id: string) => {
     if (!findItem(id)) return;
@@ -124,22 +112,16 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
       { price: 0, kcal: 0, p: 0, c: 0, f: 0 }
     );
     // Greeting and labels follow the visitor's language; meal names stay as on the kitchen's menu.
-    const discount = promo ? Math.round(totals.price * promo.discount) / 100 : 0;
-    const toPay = Math.round((totals.price - discount) * 100) / 100;
-    const priceLines = !promo
-      ? [`${t.wa.total}: ${money(totals.price)}`]
-      : discount > 0
-        ? [`${t.wa.subtotal}: ${money(totals.price)}`, `${t.wa.discount} (${promo.code}, ${promo.discount}%): -${money(discount)}`, `${t.wa.total}: ${money(toPay)}`]
-        : [`${t.wa.total}: ${money(totals.price)}`, `${t.wa.code}: ${promo.code}`];
     const extra = [name.trim() && `${t.wa.name}: ${name.trim()}`, notes.trim() && `${t.wa.notes}: ${notes.trim()}`].filter(Boolean) as string[];
     const message = [
       t.wa.intro,
       "",
       ...lines.map(({ item, qty }) => `• ${qty} × ${item.name} — ${money(item.price * qty)}`),
       "",
-      ...priceLines,
+      `${t.wa.total}: ${money(totals.price)}`,
       `${t.wa.macros}: ${totals.kcal} kcal · P ${totals.p} g · C ${totals.c} g · F ${totals.f} g`,
       ...(extra.length ? ["", ...extra] : []),
+      ...(orderNo ? ["", `${t.wa.order} #${orderNo}`] : []),
     ].join("\n");
 
     return {
@@ -158,16 +140,12 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
       setNotes,
       pulse,
       orderLink: whatsappLink(message),
-      promo,
-      discount,
-      toPay,
-      applyCode,
-      removeCode: () => setPromo(null),
       sent: () => {
-        if (promo) recordOrder(promo.code, raw).catch(() => {});
+        if (ref) recordOrder(ref.code, raw, orderNo).catch(() => {});
+        setOrderNo(newOrderNo());
       },
     };
-  }, [raw, open, add, setQty, name, notes, pulse, t, findItem, whatsappLink, promo, applyCode]);
+  }, [raw, open, add, setQty, name, notes, pulse, t, findItem, whatsappLink, ref, orderNo]);
 
   return <CartContext.Provider value={value}>{children}</CartContext.Provider>;
 }

@@ -372,11 +372,11 @@ function CodesSection({ codes, setCodes, stats }: { codes: PromoCode[]; setCodes
   return (
     <section aria-labelledby="codes-h">
       <h2 id="codes-h" className="font-serif text-3xl text-ivory">
-        Promo &amp; referral codes
+        Partner links
       </h2>
       <p className="mt-2 text-[15px] leading-relaxed text-ivory/65">
-        One code per partner (a gym, a coach). Customers type the code in their order, or open the partner’s link and it’s applied for them. Every WhatsApp order shows the code, and orders are counted
-        here so you know each partner’s share.
+        One link per partner (a gym, a coach), with a QR poster to print. Anyone who opens it is quietly linked to that partner for 30 days, and their orders are counted
+        here. Customers never see the code, the partner or a discount — their WhatsApp order just carries an order number, which you can match below.
       </p>
 
       <div className="mt-4 space-y-4">
@@ -386,7 +386,7 @@ function CodesSection({ codes, setCodes, stats }: { codes: PromoCode[]; setCodes
           return (
             <div key={i} className={`rounded-2xl border bg-ink-2 p-4 ${c.active ? "border-ivory/12" : "border-ivory/8 opacity-75"}`}>
               <div className="grid gap-4 sm:grid-cols-2">
-                <Field label="Code (letters and numbers)">
+                <Field label="Code in the link (letters and numbers)">
                   <input
                     className={`${field} uppercase`}
                     dir="ltr"
@@ -401,9 +401,6 @@ function CodesSection({ codes, setCodes, stats }: { codes: PromoCode[]; setCodes
                 <Field label="Partner (e.g. the gym’s name)">
                   <input className={field} value={c.partner} onChange={(e) => set(i, { partner: e.target.value })} />
                 </Field>
-                <Field label="Customer discount (%) — 0 for none">
-                  <Num decimal value={c.discount} onChange={(discount) => set(i, { discount })} />
-                </Field>
                 <Field label="Partner’s share of each order (%)">
                   <Num decimal value={c.share} onChange={(share) => set(i, { share })} />
                 </Field>
@@ -411,7 +408,7 @@ function CodesSection({ codes, setCodes, stats }: { codes: PromoCode[]; setCodes
 
               <label className="mt-4 flex min-h-12 items-center gap-3 rounded-xl border border-ivory/15 px-3.5">
                 <input type="checkbox" className="h-5 w-5 accent-[#ddb65e]" checked={c.active} onChange={(e) => set(i, { active: e.target.checked })} />
-                <span className="text-[15px] text-ivory/90">Active — customers can use it</span>
+                <span className="text-[15px] text-ivory/90">Active — orders through this link are counted</span>
               </label>
 
               {c.code.length >= 2 && (
@@ -451,7 +448,7 @@ function CodesSection({ codes, setCodes, stats }: { codes: PromoCode[]; setCodes
                         "…"
                       ) : (
                         <>
-                          {v?.orders ?? 0} orders · {usd(v?.cents ?? 0)}
+                          {v?.orders ?? 0} {(v?.orders ?? 0) === 1 ? "order" : "orders"} · {usd(v?.cents ?? 0)}
                           <br />
                           <span className="font-semibold text-gold">Partner: {usd(Math.round(((v?.cents ?? 0) * c.share) / 100))}</span>
                         </>
@@ -461,13 +458,28 @@ function CodesSection({ codes, setCodes, stats }: { codes: PromoCode[]; setCodes
                 ))}
               </dl>
 
+              {s && s.recent.length > 0 && (
+                <details className="mt-3 rounded-xl border border-ivory/10">
+                  <summary className="flex min-h-11 cursor-pointer items-center px-3 text-sm font-semibold text-ivory/80">Latest orders ({s.recent.length})</summary>
+                  <ul className="border-t border-ivory/10 text-sm">
+                    {s.recent.map((o, k) => (
+                      <li key={k} className="flex items-center justify-between gap-3 border-b border-ivory/5 px-3 py-2 last:border-0">
+                        <span className="font-semibold text-ivory">{o.no ? `#${o.no}` : "—"}</span>
+                        <span className="flex-1 text-ivory/55">{o.at ? new Date(o.at).toLocaleString("en-GB", { day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" }) : ""}</span>
+                        <span className="font-semibold text-gold">{usd(o.cents)}</span>
+                      </li>
+                    ))}
+                  </ul>
+                </details>
+              )}
+
               <div className="mt-4 flex">
                 <button
                   type="button"
                   className={`${danger} ms-auto`}
-                  onClick={() => confirm(`Delete the code “${c.code || "new code"}”? Its order counts stay saved.`) && setCodes((cs) => cs.filter((_, j) => j !== i))}
+                  onClick={() => confirm(`Delete the link “${c.code || "new"}”? Its order counts stay saved, and its QR codes stop counting.`) && setCodes((cs) => cs.filter((_, j) => j !== i))}
                 >
-                  Delete code
+                  Delete link
                 </button>
               </div>
             </div>
@@ -478,12 +490,12 @@ function CodesSection({ codes, setCodes, stats }: { codes: PromoCode[]; setCodes
           <QrPoster code={codes[qr]} link={`${origin}/?ref=${encodeURIComponent(codes[qr].code.toUpperCase())}`} onClose={() => setQr(null)} />
         )}
 
-        <button type="button" className={`${small} w-full`} onClick={() => setCodes((cs) => [...cs, { code: "", partner: "", discount: 0, share: 10, active: true }])}>
-          + Add a code
+        <button type="button" className={`${small} w-full`} onClick={() => setCodes((cs) => [...cs, { code: "", partner: "", share: 10, active: true }])}>
+          + Add a partner
         </button>
         <p className="text-[13px] leading-relaxed text-ivory/50">
-          Orders are counted when a customer taps “Send on WhatsApp” with the code, after the discount. Some may never be sent or paid, so check against the WhatsApp orders you actually got before paying
-          a partner.
+          An order is counted when the customer taps “Send on WhatsApp”. Some may never be sent or paid, so match the order numbers with the WhatsApp orders you actually got before
+          paying a partner.
         </p>
       </div>
     </section>

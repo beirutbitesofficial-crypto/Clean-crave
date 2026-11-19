@@ -5,12 +5,12 @@ import { useEffect, useRef, useState } from "react";
 import type { PromoCode } from "@/lib/content";
 
 /**
- * A printable poster for a partner: the CleanCrave logo, a QR code that opens the site with the
- * partner's code already applied, and the code itself for anyone who would rather type it.
+ * A printable poster for a partner: the CleanCrave logo and a QR code that opens the site.
+ * The QR carries the partner's code, so their customers' orders are counted for them.
  * Drawn on a canvas in the browser, so it downloads as a plain PNG.
  */
 const W = 1200;
-const H = 1880;
+const H = 1660;
 const INK = "#070605";
 const GOLD = "#ddb65e";
 const IVORY = "#f6f0e4";
@@ -93,29 +93,19 @@ async function drawPoster(canvas: HTMLCanvasElement, link: string, code: PromoCo
   await QRCode.toCanvas(qr, link, { errorCorrectionLevel: "M", margin: 0, width: box - 90, color: { dark: "#000000", light: "#ffffff" } });
   ctx.drawImage(qr, bx + 45, by + 45, box - 90, box - 90);
 
-  ctx.fillStyle = IVORY;
-  ctx.font = `600 34px ${cond}`;
-  ctx.letterSpacing = "8px";
-  ctx.fillText("OR USE THE CODE", W / 2, by + box + 80);
-  ctx.letterSpacing = "0px";
+  // Nothing about the partner or the code on the poster: it reads as a plain CleanCrave ad.
   ctx.fillStyle = GOLD;
-  fitText(ctx, code.code, by + box + 205, 130, display, W - 200);
-
-  let y = by + box + 300;
-  if (code.discount > 0) {
-    ctx.fillStyle = IVORY;
-    ctx.font = `700 44px ${cond}`;
-    ctx.fillText(`${code.discount}% OFF YOUR ORDER`, W / 2, y);
-    ctx.font = `38px ${arabic}`;
-    ctx.direction = "rtl";
-    ctx.fillText(`خصم ${code.discount}% على طلبك`, W / 2, y + 56);
-    ctx.direction = "ltr";
-    y += 56;
-  }
-  if (code.partner) {
-    ctx.fillStyle = "rgba(246,240,228,0.6)";
-    fitText(ctx, `with ${code.partner}`, y + 62, 36, cond, W - 200, "600");
-  }
+  fitText(ctx, "MEALS THAT FUEL YOUR GOALS", by + box + 120, 76, display, W - 200);
+  ctx.fillStyle = IVORY;
+  ctx.font = `40px ${arabic}`;
+  ctx.direction = "rtl";
+  ctx.fillText("وجبات تغذّي أهدافك", W / 2, by + box + 190);
+  ctx.direction = "ltr";
+  ctx.fillStyle = "rgba(246,240,228,0.7)";
+  ctx.font = `600 34px ${cond}`;
+  ctx.letterSpacing = "3px";
+  ctx.fillText("MACROS ON EVERY MEAL · ORDER ON WHATSAPP", W / 2, by + box + 262);
+  ctx.letterSpacing = "0px";
 
   ctx.fillStyle = "rgba(246,240,228,0.55)";
   ctx.font = `600 30px ${cond}`;

@@ -14,7 +14,7 @@ import MacroRing from "./MacroRing";
  * With something picked: "My order" with the count and the running total.
  */
 export function OrderDock() {
-  const { count, toPay, setOpen, pulse } = useCart();
+  const { count, totals, setOpen, pulse } = useCart();
   const [past, setPast] = useState(false);
   const [inMenu, setInMenu] = useState(false);
   const { t } = useLang();
@@ -41,13 +41,13 @@ export function OrderDock() {
         type="button"
         onClick={() => setOpen(true)}
         className="gold-fill fixed inset-x-4 bottom-[max(1rem,env(safe-area-inset-bottom))] z-50 flex min-h-14 items-center gap-3 rounded-full ps-2.5 pe-6 text-ink shadow-[0_16px_44px_-12px_rgba(221,182,94,0.8)] transition-transform duration-300 hover:-translate-y-0.5 sm:inset-x-auto sm:end-5 md:bottom-8 md:end-8"
-        aria-label={t.cart.open(t.meals(count), money(toPay))}
+        aria-label={t.cart.open(t.meals(count), money(totals.price))}
       >
         <span key={pulse} className="pop grid h-9 w-9 place-items-center rounded-full bg-ink font-cond text-base font-bold text-ivory">
           {count}
         </span>
         <span className="text-xs font-extrabold uppercase tracking-[0.22em] rtl:text-base">{t.myOrder}</span>
-        <span className="ms-auto font-display text-lg leading-none sm:ms-0">{money(toPay)}</span>
+        <span className="ms-auto font-display text-lg leading-none sm:ms-0">{money(totals.price)}</span>
       </button>
     );
   }
@@ -69,7 +69,7 @@ export function OrderDock() {
 }
 
 export function CartDrawer() {
-  const { lines, count, totals, open, setOpen, setQty, clear, name, setName, notes, setNotes, orderLink, promo, discount, toPay, sent } = useCart();
+  const { lines, count, totals, open, setOpen, setQty, clear, name, setName, notes, setNotes, orderLink, sent } = useCart();
   const closeBtn = useRef<HTMLButtonElement>(null);
   const { t, name: nameOf } = useLang();
   const { contact } = useContent();
@@ -190,7 +190,6 @@ export function CartDrawer() {
                   <span className="mb-1.5 block font-cond text-[13px] font-semibold uppercase tracking-[0.24em] text-ivory/65 rtl:text-[15px]">{t.cart.notes}</span>
                   <textarea className={`${field} min-h-20 py-3`} placeholder={t.cart.notesHint} value={notes} onChange={(e) => setNotes(e.target.value)} />
                 </label>
-                <PromoField field={field} />
                 <button type="button" onClick={() => confirm(t.cart.clearConfirm) && clear()} className="min-h-11 text-sm text-ivory/55 underline underline-offset-4 hover:text-ivory rtl:text-base">
                   {t.cart.clear}
                 </button>
@@ -201,25 +200,11 @@ export function CartDrawer() {
 
         {lines.length > 0 && (
           <footer className="border-t border-ivory/10 px-5 pb-[max(1.25rem,env(safe-area-inset-bottom))] pt-4 sm:px-6">
-            {discount > 0 && promo && (
-              <dl className="mb-2 space-y-1 font-cond text-sm font-semibold tracking-wide text-ivory/60 rtl:text-base">
-                <div className="flex justify-between">
-                  <dt>{t.promo.subtotal}</dt>
-                  <dd dir="ltr">{money(totals.price)}</dd>
-                </div>
-                <div className="flex justify-between text-wa">
-                  <dt>
-                    {t.promo.discount} · <span dir="ltr">{promo.code}</span>
-                  </dt>
-                  <dd dir="ltr">-{money(discount)}</dd>
-                </div>
-              </dl>
-            )}
             <div className="mb-3 flex items-end justify-between">
               <p className="font-cond text-[13px] font-semibold uppercase tracking-[0.3em] text-ivory/60 rtl:text-base">
                 {t.cart.total} · {t.meals(count)}
               </p>
-              <p className="font-display text-[34px] leading-none text-ivory">{money(toPay)}</p>
+              <p className="font-display text-[34px] leading-none text-ivory">{money(totals.price)}</p>
             </div>
             <a
               href={orderLink}
@@ -246,62 +231,3 @@ export function CartDrawer() {
   );
 }
 
-/** Promo or referral code: type it in, or it arrives already applied from a partner's link. */
-function PromoField({ field }: { field: string }) {
-  const { promo, applyCode, removeCode } = useCart();
-  const { t } = useLang();
-  const [value, setValue] = useState("");
-  const [state, setState] = useState<"idle" | "busy" | "bad">("idle");
-  const label = "mb-1.5 block font-cond text-[13px] font-semibold uppercase tracking-[0.24em] text-ivory/65 rtl:text-[15px]";
-
-  if (promo) {
-    return (
-      <div>
-        <span className={label}>{t.promo.label}</span>
-        <div className="flex min-h-12 items-center gap-3 rounded-2xl border border-wa/50 bg-wa/10 ps-4 pe-1.5">
-          <span className="flex-1 font-cond text-base font-bold tracking-wide text-ivory">{t.promo.on(promo.code, promo.discount)}</span>
-          <button type="button" onClick={removeCode} className="grid h-10 w-10 place-items-center rounded-full text-ivory/70 hover:bg-ivory/10 hover:text-ivory" aria-label={t.promo.remove}>
-            <Close className="h-3.5 w-3.5" />
-          </button>
-        </div>
-      </div>
-    );
-  }
-
-  async function submit(e: React.FormEvent) {
-    e.preventDefault();
-    if (!value.trim() || state === "busy") return;
-    setState("busy");
-    const ok = await applyCode(value);
-    setState(ok ? "idle" : "bad");
-    if (ok) setValue("");
-  }
-
-  return (
-    <form onSubmit={submit} noValidate>
-      <label htmlFor="promo-code" className={label}>
-        {t.promo.label}
-      </label>
-      <div className="flex gap-2">
-        <input
-          id="promo-code"
-          className={`${field} uppercase`}
-          dir="ltr"
-          autoCapitalize="characters"
-          autoCorrect="off"
-          spellCheck={false}
-          value={value}
-          aria-invalid={state === "bad"}
-          aria-describedby="promo-msg"
-          onChange={(e) => (setValue(e.target.value), state === "bad" && setState("idle"))}
-        />
-        <button type="submit" disabled={!value.trim() || state === "busy"} className="btn btn-line !min-h-12 shrink-0 !px-5 disabled:opacity-40">
-          {state === "busy" ? t.promo.checking : t.promo.apply}
-        </button>
-      </div>
-      <p id="promo-msg" role="status" className="mt-1.5 min-h-5 text-sm text-[#ff9d8a] rtl:text-base">
-        {state === "bad" ? t.promo.bad : ""}
-      </p>
-    </form>
-  );
-}
