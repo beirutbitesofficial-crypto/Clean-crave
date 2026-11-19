@@ -23,7 +23,7 @@ async function findCode(raw: string) {
   return (await getContent()).codes.find((c) => c.code === code && c.active) ?? null;
 }
 
-/** Checks a partner's referral code. Only the code comes back — never the partner or their share. */
+/** Checks a partner's referral code. Only the code comes back — never the partner or what they earn. */
 export async function checkCode(raw: string): Promise<string | null> {
   if (!(await allowed("check", 60))) return null;
   return (await findCode(raw))?.code ?? null;

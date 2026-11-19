@@ -12,8 +12,8 @@ export type PromoCode = {
   code: string;
   /** Who the code belongs to, e.g. the gym's name. */
   partner: string;
-  /** Percent of each order the partner earns. */
-  share: number;
+  /** What the partner earns for each order, in dollars (a fixed amount, whatever the order's size). */
+  perOrder: number;
   active: boolean;
 };
 

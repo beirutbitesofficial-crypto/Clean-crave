@@ -401,8 +401,8 @@ function CodesSection({ codes, setCodes, stats }: { codes: PromoCode[]; setCodes
                 <Field label="Partner (e.g. the gym’s name)">
                   <input className={field} value={c.partner} onChange={(e) => set(i, { partner: e.target.value })} />
                 </Field>
-                <Field label="Partner’s share of each order (%)">
-                  <Num decimal value={c.share} onChange={(share) => set(i, { share })} />
+                <Field label="Partner gets per order ($)">
+                  <Num decimal value={c.perOrder} onChange={(perOrder) => set(i, { perOrder })} />
                 </Field>
               </div>
 
@@ -450,7 +450,7 @@ function CodesSection({ codes, setCodes, stats }: { codes: PromoCode[]; setCodes
                         <>
                           {v?.orders ?? 0} {(v?.orders ?? 0) === 1 ? "order" : "orders"} · {usd(v?.cents ?? 0)}
                           <br />
-                          <span className="font-semibold text-gold">Partner: {usd(Math.round(((v?.cents ?? 0) * c.share) / 100))}</span>
+                          <span className="font-semibold text-gold">Partner: {usd(Math.round((v?.orders ?? 0) * c.perOrder * 100))}</span>
                         </>
                       )}
                     </dd>
@@ -490,7 +490,7 @@ function CodesSection({ codes, setCodes, stats }: { codes: PromoCode[]; setCodes
           <QrPoster code={codes[qr]} link={`${origin}/?ref=${encodeURIComponent(codes[qr].code.toUpperCase())}`} onClose={() => setQr(null)} />
         )}
 
-        <button type="button" className={`${small} w-full`} onClick={() => setCodes((cs) => [...cs, { code: "", partner: "", share: 10, active: true }])}>
+        <button type="button" className={`${small} w-full`} onClick={() => setCodes((cs) => [...cs, { code: "", partner: "", perOrder: 0.5, active: true }])}>
           + Add a partner
         </button>
         <p className="text-[13px] leading-relaxed text-ivory/50">

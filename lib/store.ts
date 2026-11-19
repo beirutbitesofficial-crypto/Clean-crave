@@ -215,7 +215,8 @@ export function sanitize(input: unknown): { ok: true; content: Content } | { ok:
     codes.push({
       code,
       partner: text(k.partner, 60),
-      share: Math.round(num(k.share, 100) * 10) / 10,
+      // Partners saved before the fixed amount existed start at the usual $0.50.
+      perOrder: Math.round(num(k.perOrder ?? 0.5, 1000) * 100) / 100,
       active: k.active !== false,
     });
   }
