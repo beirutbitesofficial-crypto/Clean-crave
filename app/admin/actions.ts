@@ -4,7 +4,7 @@ import { revalidatePath } from "next/cache";
 import { headers } from "next/headers";
 import { checkLogin, endSession, signedIn, startSession } from "@/lib/auth";
 import type { Content } from "@/lib/content";
-import { canSave, sanitize, saveContent } from "@/lib/store";
+import { type CodeStats, canSave, codeStats, sanitize, saveContent } from "@/lib/store";
 
 /** Slows password guessing: after 5 wrong tries, an address waits 10 minutes. */
 const tries = new Map<string, { n: number; until: number }>();
@@ -47,4 +47,13 @@ export async function save(content: Content): Promise<{ ok: true; content: Conte
   }
   revalidatePath("/", "layout");
   return clean;
+}
+
+export async function stats(): Promise<CodeStats | null> {
+  if (!(await signedIn())) return null;
+  try {
+    return await codeStats();
+  } catch {
+    return null;
+  }
 }

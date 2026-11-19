@@ -86,7 +86,8 @@ const fonts = [display, cond, sans, serif, arDisplay, arText, arSerif].map((f) =
 
 export default async function RootLayout({ children }: { children: React.ReactNode }) {
   // The menu and contact details as last saved in the admin panel.
-  const content = await getContent();
+  const { contact, menu } = await getContent();
+  const content = { contact, menu };
   return (
     <html lang="en" dir="ltr" className={fonts} suppressHydrationWarning>
       <head>

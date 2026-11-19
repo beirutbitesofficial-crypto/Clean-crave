@@ -5,7 +5,7 @@ import { gsap, useGSAP } from "@/lib/gsap";
 import { useLang } from "@/lib/i18n";
 import { useContent } from "@/lib/content";
 import { site } from "@/lib/site";
-import { WhatsAppIcon } from "./Icons";
+import { InstagramIcon, WhatsAppIcon } from "./Icons";
 import LangToggle from "./LangToggle";
 
 /** Closing signature: the name in hollow letters, poured full of gold as the page ends. */
@@ -64,7 +64,8 @@ export default function Footer() {
               ))}
               {contact.instagram && (
                 <li>
-                  <a href={contact.instagram} target="_blank" rel="noopener noreferrer" className="inline-flex min-h-11 items-center transition-colors hover:text-gold">
+                  <a href={contact.instagram} target="_blank" rel="noopener noreferrer" className="inline-flex min-h-11 items-center gap-2 transition-colors hover:text-gold">
+                    <InstagramIcon className="h-[18px] w-[18px]" />
                     {t.footer.instagram}
                   </a>
                 </li>

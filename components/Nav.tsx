@@ -5,7 +5,7 @@ import { useCart } from "@/lib/cart";
 import { useLang } from "@/lib/i18n";
 import { useContent } from "@/lib/content";
 
-import { WhatsAppIcon } from "./Icons";
+import { InstagramIcon, WhatsAppIcon } from "./Icons";
 import LangToggle from "./LangToggle";
 
 /** The name, set in type. Always Latin, always left-to-right — it is the brand's own lettering. */
@@ -51,6 +51,17 @@ export default function Nav() {
           <a href="#order" className={link}>
             {t.nav.order}
           </a>
+          {contact.instagram && (
+            <a
+              href={contact.instagram}
+              target="_blank"
+              rel="noopener noreferrer"
+              aria-label={t.footer.instagram}
+              className="ms-1 grid h-11 w-11 place-items-center rounded-full text-ivory/80 transition-colors hover:text-gold"
+            >
+              <InstagramIcon className="h-[19px] w-[19px]" />
+            </a>
+          )}
           <LangToggle className="ms-1 md:ms-2" />
           {count > 0 ? (
             <button type="button" onClick={() => setOpen(true)} className="ms-1 inline-flex min-h-11 items-center gap-2.5 rounded-full border border-gold/50 px-3 text-ivory transition-colors hover:border-gold sm:px-4">

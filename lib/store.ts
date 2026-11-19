@@ -1,8 +1,8 @@
 import "server-only";
 import { promises as fs } from "node:fs";
 import path from "node:path";
-import { get, put } from "@vercel/blob";
-import type { Content } from "./content";
+import { get, list, put } from "@vercel/blob";
+import type { Content, PromoCode } from "./content";
 import { type Category, type Item, menu as defaultMenu } from "./menu";
 import { type Contact, defaultContact } from "./site";
 
@@ -20,7 +20,7 @@ export const hasBlob = () => Boolean(process.env.BLOB_STORE_ID || process.env.BL
 /** Edits can be saved: a Blob store is connected, or this is a laptop. */
 export const canSave = () => hasBlob() || !process.env.VERCEL;
 
-const defaults = (): Content => ({ contact: defaultContact, menu: defaultMenu });
+const defaults = (): Content => ({ contact: defaultContact, menu: defaultMenu, codes: [] });
 
 async function readRaw(): Promise<string | null> {
   if (hasBlob()) {
@@ -50,22 +50,80 @@ export async function getContent(): Promise<Content> {
   }
 }
 
+async function putBlob(pathname: string, body: string) {
+  let last: unknown;
+  for (const access of ACCESS) {
+    try {
+      await put(pathname, body, { access, allowOverwrite: true, addRandomSuffix: false, contentType: "application/json", cacheControlMaxAge: 60 });
+      return;
+    } catch (e) {
+      last = e;
+    }
+  }
+  throw last;
+}
+
 export async function saveContent(content: Content) {
   const body = JSON.stringify(content, null, 2);
-  if (hasBlob()) {
-    let last: unknown;
-    for (const access of ACCESS) {
-      try {
-        await put(PATHNAME, body, { access, allowOverwrite: true, addRandomSuffix: false, contentType: "application/json", cacheControlMaxAge: 60 });
-        return;
-      } catch (e) {
-        last = e;
-      }
-    }
-    throw last;
-  }
+  if (hasBlob()) return putBlob(PATHNAME, body);
   await fs.mkdir(path.dirname(LOCAL), { recursive: true });
   await fs.writeFile(LOCAL, body, "utf8");
+}
+
+/* ---------- Orders sent with a code ----------
+ * One tiny file per order, with everything in its name: orders/<CODE>/<YYYY-MM>/<time>_<cents>_<random>.json.
+ * The admin panel then needs only a listing to add them up, and two orders can never overwrite each other.
+ */
+const ORDERS = "cleancrave/orders/";
+const LOCAL_ORDERS = path.join(process.cwd(), ".data", "orders");
+
+export async function logOrder(code: string, cents: number) {
+  const now = new Date();
+  const month = now.toISOString().slice(0, 7);
+  const file = `${now.getTime()}_${cents}_${Math.random().toString(36).slice(2, 8)}.json`;
+  const rel = `${code}/${month}/${file}`;
+  const body = JSON.stringify({ code, cents, at: now.toISOString() });
+  if (hasBlob()) return putBlob(ORDERS + rel, body);
+  await fs.mkdir(path.join(LOCAL_ORDERS, code, month), { recursive: true });
+  await fs.writeFile(path.join(LOCAL_ORDERS, rel), body, "utf8");
+}
+
+export type CodeStats = Record<string, { month: { orders: number; cents: number }; all: { orders: number; cents: number } }>;
+
+async function orderPaths(): Promise<string[]> {
+  if (hasBlob()) {
+    const out: string[] = [];
+    let cursor: string | undefined;
+    do {
+      const page = await list({ prefix: ORDERS, cursor, limit: 1000 });
+      out.push(...page.blobs.map((b) => b.pathname.slice(ORDERS.length)));
+      cursor = page.hasMore ? page.cursor : undefined;
+    } while (cursor);
+    return out;
+  }
+  try {
+    return (await fs.readdir(LOCAL_ORDERS, { recursive: true })).map(String).filter((p) => p.endsWith(".json"));
+  } catch {
+    return [];
+  }
+}
+
+export async function codeStats(): Promise<CodeStats> {
+  const month = new Date().toISOString().slice(0, 7);
+  const stats: CodeStats = {};
+  for (const p of await orderPaths()) {
+    const [code, m, file] = p.split(/[\\/]/);
+    const cents = Number(file?.split("_")[1]);
+    if (!code || !m || !Number.isFinite(cents)) continue;
+    const s = (stats[code] ??= { month: { orders: 0, cents: 0 }, all: { orders: 0, cents: 0 } });
+    s.all.orders++;
+    s.all.cents += cents;
+    if (m === month) {
+      s.month.orders++;
+      s.month.cents += cents;
+    }
+  }
+  return stats;
 }
 
 /* ---------- Checking what the admin panel sends ---------- */
@@ -90,6 +148,12 @@ function idFor(raw: unknown, name: string, taken: Set<string>, fallback: string)
   for (let n = 2; taken.has(id); n++) id = `${base}-${n}`;
   taken.add(id);
   return id;
+}
+
+/** Codes are matched without caring about case or spaces: "gym x" finds GYMX. */
+export function cleanCode(v: unknown) {
+  const code = typeof v === "string" ? v.toUpperCase().replace(/\s+/g, "") : "";
+  return /^[A-Z0-9-]{2,20}$/.test(code) ? code : "";
 }
 
 export function sanitize(input: unknown): { ok: true; content: Content } | { ok: false; error: string } {
@@ -135,5 +199,21 @@ export function sanitize(input: unknown): { ok: true; content: Content } | { ok:
     });
   }
   if (!menu.some((c) => c.items.length)) return { ok: false, error: "The menu needs at least one meal." };
-  return { ok: true, content: { contact, menu } };
+
+  const codes: PromoCode[] = [];
+  const seen = new Set<string>();
+  for (const k of (Array.isArray((src as { codes?: unknown }).codes) ? (src as { codes: unknown[] }).codes.slice(0, 200) : []) as Partial<PromoCode>[]) {
+    const code = cleanCode(k?.code);
+    if (!code) return { ok: false, error: "Every code needs 2–20 letters or numbers (dashes allowed)." };
+    if (seen.has(code)) return { ok: false, error: `The code “${code}” is used twice.` };
+    seen.add(code);
+    codes.push({
+      code,
+      partner: text(k.partner, 60),
+      discount: Math.round(num(k.discount, 90) * 10) / 10,
+      share: Math.round(num(k.share, 100) * 10) / 10,
+      active: k.active !== false,
+    });
+  }
+  return { ok: true, content: { contact, menu, codes } };
 }

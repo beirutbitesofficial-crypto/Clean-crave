@@ -1,8 +1,9 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
-import { logout, save } from "@/app/admin/actions";
-import type { Content } from "@/lib/content";
+import { logout, save, stats as loadStats } from "@/app/admin/actions";
+import type { Content, PromoCode } from "@/lib/content";
+import type { CodeStats } from "@/lib/store";
 import { type Category, type Item, money } from "@/lib/menu";
 
 const field = "min-h-12 w-full rounded-xl border border-ivory/15 bg-ink px-3.5 text-base text-ivory placeholder:text-ivory/30 focus:border-gold/70 focus:outline-none";
@@ -140,6 +141,11 @@ export default function Editor({ initial, canSave }: { initial: Content; canSave
   const [busy, setBusy] = useState(false);
   const [note, setNote] = useState<{ kind: "ok" | "error"; text: string } | null>(null);
   const dirty = useMemo(() => JSON.stringify(content) !== saved, [content, saved]);
+  const [stats, setStats] = useState<CodeStats | null>(null);
+
+  useEffect(() => {
+    loadStats().then(setStats, () => {});
+  }, []);
 
   useEffect(() => {
     if (!dirty) return;
@@ -150,6 +156,7 @@ export default function Editor({ initial, canSave }: { initial: Content; canSave
 
   const setMenu = (fn: (menu: Category[]) => Category[]) => (setNote(null), setContent((c) => ({ ...c, menu: fn(c.menu) })));
   const setCat = (id: string, fn: (cat: Category) => Category) => setMenu((m) => m.map((c) => (c.id === id ? fn(c) : c)));
+  const setCodes = (fn: (codes: PromoCode[]) => PromoCode[]) => (setNote(null), setContent((c) => ({ ...c, codes: fn(c.codes) })));
   const setContact = (patch: Partial<Content["contact"]>) => (setNote(null), setContent((c) => ({ ...c, contact: { ...c.contact, ...patch } })));
 
   async function onSave() {
@@ -211,6 +218,8 @@ export default function Editor({ initial, canSave }: { initial: Content; canSave
             </Field>
           </div>
         </section>
+
+        <CodesSection codes={content.codes} setCodes={setCodes} stats={stats} />
 
         <section aria-labelledby="menu-h">
           <div className="flex items-end justify-between gap-4">
@@ -346,5 +355,128 @@ export default function Editor({ initial, canSave }: { initial: Content; canSave
         </div>
       </div>
     </div>
+  );
+}
+
+const usd = (cents: number) => `$${(cents / 100).toFixed(2).replace(/\.00$/, "")}`;
+
+function CodesSection({ codes, setCodes, stats }: { codes: PromoCode[]; setCodes: (fn: (codes: PromoCode[]) => PromoCode[]) => void; stats: CodeStats | null }) {
+  const [copied, setCopied] = useState<number | null>(null);
+  // Read after the first paint, so the server and the browser draw the same page.
+  const [origin, setOrigin] = useState("");
+  useEffect(() => setOrigin(window.location.origin), []);
+  const set = (i: number, patch: Partial<PromoCode>) => setCodes((cs) => cs.map((c, j) => (j === i ? { ...c, ...patch } : c)));
+
+  return (
+    <section aria-labelledby="codes-h">
+      <h2 id="codes-h" className="font-serif text-3xl text-ivory">
+        Promo &amp; referral codes
+      </h2>
+      <p className="mt-2 text-[15px] leading-relaxed text-ivory/65">
+        One code per partner (a gym, a coach). Customers type the code in their order, or open the partner’s link and it’s applied for them. Every WhatsApp order shows the code, and orders are counted
+        here so you know each partner’s share.
+      </p>
+
+      <div className="mt-4 space-y-4">
+        {codes.map((c, i) => {
+          const s = stats?.[c.code.toUpperCase()];
+          const link = `${origin}/?ref=${encodeURIComponent(c.code.toUpperCase())}`;
+          return (
+            <div key={i} className={`rounded-2xl border bg-ink-2 p-4 ${c.active ? "border-ivory/12" : "border-ivory/8 opacity-75"}`}>
+              <div className="grid gap-4 sm:grid-cols-2">
+                <Field label="Code (letters and numbers)">
+                  <input
+                    className={`${field} uppercase`}
+                    dir="ltr"
+                    autoCapitalize="characters"
+                    autoCorrect="off"
+                    spellCheck={false}
+                    value={c.code}
+                    onChange={(e) => set(i, { code: e.target.value.toUpperCase().replace(/[^A-Z0-9-]/g, "") })}
+                    placeholder="GYMX"
+                  />
+                </Field>
+                <Field label="Partner (e.g. the gym’s name)">
+                  <input className={field} value={c.partner} onChange={(e) => set(i, { partner: e.target.value })} />
+                </Field>
+                <Field label="Customer discount (%) — 0 for none">
+                  <Num decimal value={c.discount} onChange={(discount) => set(i, { discount })} />
+                </Field>
+                <Field label="Partner’s share of each order (%)">
+                  <Num decimal value={c.share} onChange={(share) => set(i, { share })} />
+                </Field>
+              </div>
+
+              <label className="mt-4 flex min-h-12 items-center gap-3 rounded-xl border border-ivory/15 px-3.5">
+                <input type="checkbox" className="h-5 w-5 accent-[#ddb65e]" checked={c.active} onChange={(e) => set(i, { active: e.target.checked })} />
+                <span className="text-[15px] text-ivory/90">Active — customers can use it</span>
+              </label>
+
+              {c.code.length >= 2 && (
+                <div className="mt-4 flex items-center gap-2 rounded-xl bg-ink p-1.5 ps-3.5">
+                  <span dir="ltr" className="min-w-0 flex-1 truncate font-mono text-[13px] text-ivory/75">
+                    {link}
+                  </span>
+                  <button
+                    type="button"
+                    className={small}
+                    onClick={() =>
+                      navigator.clipboard?.writeText(link).then(
+                        () => (setCopied(i), setTimeout(() => setCopied(null), 1600)),
+                        () => {}
+                      )
+                    }
+                  >
+                    {copied === i ? "Copied" : "Copy link"}
+                  </button>
+                </div>
+              )}
+
+              <dl className="mt-4 grid grid-cols-2 gap-3 text-sm">
+                {(
+                  [
+                    ["This month", s?.month],
+                    ["All time", s?.all],
+                  ] as const
+                ).map(([label, v]) => (
+                  <div key={label} className="rounded-xl border border-ivory/10 p-3">
+                    <dt className="text-[13px] font-semibold text-ivory/55">{label}</dt>
+                    <dd className="mt-1 leading-relaxed text-ivory/90">
+                      {stats === null ? (
+                        "…"
+                      ) : (
+                        <>
+                          {v?.orders ?? 0} orders · {usd(v?.cents ?? 0)}
+                          <br />
+                          <span className="font-semibold text-gold">Partner: {usd(Math.round(((v?.cents ?? 0) * c.share) / 100))}</span>
+                        </>
+                      )}
+                    </dd>
+                  </div>
+                ))}
+              </dl>
+
+              <div className="mt-4 flex">
+                <button
+                  type="button"
+                  className={`${danger} ms-auto`}
+                  onClick={() => confirm(`Delete the code “${c.code || "new code"}”? Its order counts stay saved.`) && setCodes((cs) => cs.filter((_, j) => j !== i))}
+                >
+                  Delete code
+                </button>
+              </div>
+            </div>
+          );
+        })}
+
+        <button type="button" className={`${small} w-full`} onClick={() => setCodes((cs) => [...cs, { code: "", partner: "", discount: 0, share: 10, active: true }])}>
+          + Add a code
+        </button>
+        <p className="text-[13px] leading-relaxed text-ivory/50">
+          Orders are counted when a customer taps “Send on WhatsApp” with the code, after the discount. Some may never be sent or paid, so check against the WhatsApp orders you actually got before paying
+          a partner.
+        </p>
+      </div>
+    </section>
   );
 }

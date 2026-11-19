@@ -6,7 +6,7 @@ import { type Conditions, gsap, MQ, useGSAP } from "@/lib/gsap";
 import { useLang } from "@/lib/i18n";
 import { useContent } from "@/lib/content";
 
-import { WhatsAppIcon } from "./Icons";
+import { InstagramIcon, WhatsAppIcon } from "./Icons";
 import { SplitWords } from "./SplitText";
 
 /** The gold page: one job — get the order onto WhatsApp. */
@@ -109,6 +109,17 @@ export default function Order() {
               <button type="button" onClick={() => setOpen(true)} className="inline-flex min-h-11 items-center rounded-full border border-ink/35 px-5 text-xs font-extrabold uppercase tracking-[0.22em] transition-colors hover:bg-ink hover:text-ivory rtl:text-base">
                 {t.order.review} · {count}
               </button>
+            )}
+            {contact.instagram && (
+              <a
+                href={contact.instagram}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex min-h-11 items-center gap-2 rounded-full border border-ink/35 px-5 text-xs font-extrabold uppercase tracking-[0.22em] transition-colors hover:bg-ink hover:text-ivory rtl:text-base"
+              >
+                <InstagramIcon className="h-[18px] w-[18px]" />
+                {t.footer.instagram}
+              </a>
             )}
           </div>
         </div>
